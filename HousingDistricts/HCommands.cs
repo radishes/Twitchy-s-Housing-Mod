@@ -225,6 +225,40 @@ namespace HousingDistricts
                         }
                         break;
                     }
+                case "redefine":
+                    {
+                        if (args.Parameters.Count > 1)
+                        {
+                            if (!args.Player.TempPoints.Any(p => p == Point.Zero))
+                            {
+                                string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
+
+                                var x = Math.Min(args.Player.TempPoints[0].X, args.Player.TempPoints[1].X);
+                                var y = Math.Min(args.Player.TempPoints[0].Y, args.Player.TempPoints[1].Y);
+                                var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X);
+                                var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y);
+
+                                if (HouseTools.RedefineHouse(x, y, width, height, houseName))
+                                {
+                                    args.Player.TempPoints[0] = Point.Zero;
+                                    args.Player.TempPoints[1] = Point.Zero;
+                                    args.Player.SendMessage("Redefined house " + houseName, Color.Yellow);
+                                }
+                                else
+                                {
+                                    args.Player.SendMessage("Error redefining house" + houseName, Color.Red);
+                                }
+                            }
+                            else
+                            {
+                                args.Player.SendMessage("Points not set up yet", Color.Red);
+                            }
+                        }
+                        else
+                            args.Player.SendMessage("Invalid syntax! Proper syntax: /house redefine [name]", Color.Red);
+                        break;
+                    }
+
             }
         }
 
