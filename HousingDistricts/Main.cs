@@ -12,7 +12,7 @@ using System.Data;
 
 namespace HousingDistricts
 {
-    [APIVersion(1, 10)]
+    [APIVersion(1, 11)]
     public class HousingDistricts : TerrariaPlugin
     {
         public static HConfigFile HConfig { get; set; }
@@ -232,6 +232,7 @@ namespace HousingDistricts
 
             var tsplr = TShock.Players[msg.whoAmI];
             
+            /*
             foreach (House house in HousingDistricts.Houses)
             {
                 if (house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
@@ -240,6 +241,7 @@ namespace HousingDistricts
                     e.Handled = true;
                 }
             }
+            */
         }
         public void OnGreetPlayer(int who, HandledEventArgs e)
         {

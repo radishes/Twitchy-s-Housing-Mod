@@ -86,6 +86,29 @@ namespace HousingDistricts
             HousingDistricts.SQLEditor.UpdateValues("HousingDistrict", values, new List<SqlValue>());
             return locked;
         }
+        public static bool RedefineHouse(int tx, int ty, int width, int height, string housename, int locked)
+        {
+            var house = GetHouseByName(housename);
+            var houseName = house.Name;
+            var houseOwners = house.Owners;
+            var houseWorldID = house.WorldID;
+            var houseID = house.ID;
+            var houseLocked = house.Locked;
+            HousingDistricts.Houses.Remove(house);
+            List<SqlValue> values = new List<SqlValue>();
+            values.Add(new SqlValue("TopX", tx));
+            values.Add(new SqlValue("TopY", ty));
+            values.Add(new SqlValue("BottomX", width));
+            values.Add(new SqlValue("BottomY", height));
+            List<SqlValue> wheres = new List<SqlValue>();
+            wheres.Add(new SqlValue("Name", "'" + houseName + "'"));
+            wheres.Add(new SqlValue("WorldID", "'" + Main.worldID.ToString() + "'"));
+            HousingDistricts.SQLEditor.UpdateValues("HousingDistrict", values, wheres);
+            HousingDistricts.Houses.Add(new House(new Rectangle(tx, ty, width, height), houseOwners, houseID, houseName, Main.worldID.ToString(), locked));
+
+            return true;
+        }
+
 
         public static House GetHouseByName(string name)
         {

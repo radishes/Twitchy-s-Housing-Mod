@@ -35,9 +35,6 @@
     <Compile Include="Main.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="Community.CsharpSqlite, Version=3.7.5.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Refs\Community.CsharpSqlite.dll</HintPath>
