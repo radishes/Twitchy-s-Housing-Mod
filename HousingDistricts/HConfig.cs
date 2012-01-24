@@ -8,6 +8,7 @@ namespace HousingDistricts
     {
         public bool NotifyOnEntry = true;
         public bool NotifyOnExit = true;
+        public bool HouseChatEnabled = true;
 
         public static HConfigFile Read(string path)
         {

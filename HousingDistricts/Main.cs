@@ -227,21 +227,21 @@ namespace HousingDistricts
         }
         public void OnChat(messageBuffer msg, int ply, string text, HandledEventArgs e)
         {
-            if (text[0] == '/')
-                return;
-
-            var tsplr = TShock.Players[msg.whoAmI];
-            
-            /*
-            foreach (House house in HousingDistricts.Houses)
+            if (HConfig.HouseChatEnabled)
             {
-                if (house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
+                if (text[0] == '/')
+                    return;
+
+                var tsplr = TShock.Players[msg.whoAmI];
+                foreach (House house in HousingDistricts.Houses)
                 {
-                    HTools.BroadcastToHouse(house.ID, text, tsplr.Name);
-                    e.Handled = true;
+                    if (house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
+                    {
+                        HTools.BroadcastToHouse(house.ID, text, tsplr.Name);
+                        e.Handled = true;
+                    }
                 }
             }
-            */
         }
         public void OnGreetPlayer(int who, HandledEventArgs e)
         {
