@@ -110,7 +110,8 @@ namespace HousingDistricts
                 new SqlColumn("BottomY", MySqlDbType.Int32),
                 new SqlColumn("Owners", MySqlDbType.Text),
                 new SqlColumn("WorldID", MySqlDbType.Text),
-                new SqlColumn("Locked", MySqlDbType.Int32)
+                new SqlColumn("Locked", MySqlDbType.Int32),
+                new SqlColumn("ChatEnabled", MySqlDbType.Int32)
             );
             SQLWriter.EnsureExists(table);
         	var reader = TShock.DB.QueryReader("Select * from HousingDistrict");
@@ -122,38 +123,12 @@ namespace HousingDistricts
 				foreach( string i in list)
 					owners.Add( i );
 				int locked = reader.Get<int>("Locked");
+                int chatenabled;
+                if (reader.Get<int>("ChatEnabled") == 1) { chatenabled = 1; }
+                else { chatenabled = 0; }
 				Houses.Add( new House( new Rectangle( reader.Get<int>("TopX"),reader.Get<int>("TopY"),reader.Get<int>("BottomX"),reader.Get<int>("BottomY") ), 
-					owners, id, reader.Get<string>("Name"), reader.Get<string>("WorldID"), locked));
+					owners, id, reader.Get<string>("Name"), reader.Get<string>("WorldID"), locked, chatenabled));
 			}
-            /*for (int i = 0; i < SQLEditor.ReadColumn("HousingDistrict", "ID", new List<SqlValue>()).Count; i++)
-            {
-                string[] list = SQLEditor.ReadColumn("HousingDistrict", "Owners", new List<SqlValue>())[i].ToString().Split(',');
-                List<string> items = new List<string>();
-
-                foreach (string item in list)
-                {
-                    items.Add(item);
-                }
-
-                int locked = 0;
-
-                if (SQLEditor.ReadColumn("HousingDistrict", "Locked", new List<SqlValue>())[i] != null)
-                {
-                    locked = (int)SQLEditor.ReadColumn("HousingDistrict", "Locked", new List<SqlValue>())[i];
-                }
-
-                Houses.Add(new House(
-                    new Rectangle(
-                    ("HousingDistrict", "TopX", new List<SqlValue>())[i],
-                    (int)SQLEditor.ReadColumn("HousingDistrict", "TopY", new List<SqlValue>())[i],
-                    (int)SQLEditor.ReadColumn("HousingDistrict", "BottomX", new List<SqlValue>())[i],
-                    (int)SQLEditor.ReadColumn("HousingDistrict", "BottomY", new List<SqlValue>())[i]),
-                    items,
-                    (int)SQLEditor.ReadColumn("HousingDistrict", "ID", new List<SqlValue>())[i],
-                    (string)SQLEditor.ReadColumn("HousingDistrict", "Name", new List<SqlValue>())[i],
-                    (string)SQLEditor.ReadColumn("HousingDistrict", "WorldID", new List<SqlValue>())[i],
-                    locked));
-            }*/
             #endregion
 
             #region Commands
@@ -165,63 +140,66 @@ namespace HousingDistricts
         }
         public void OnUpdate()
         {
-            lock (HPlayers)
+            if (HConfig.NotifyOnEntry || HConfig.NotifyOnExit)
             {
-                foreach (HPlayer player in HPlayers)
+                lock (HPlayers)
                 {
-                    int HousesNotIn = 0;
-                    foreach (House house in HousingDistricts.Houses)
+                    foreach (HPlayer player in HPlayers)
                     {
-                        if (HConfig.NotifyOnEntry)
+                        int HousesNotIn = 0;
+                        foreach (House house in HousingDistricts.Houses)
                         {
-                            if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
+                            if (HConfig.NotifyOnEntry)
                             {
-                                if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("enterlocked"))
+                                if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
                                 {
-                                    if (!HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house.Name))
+                                    if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("enterlocked"))
                                     {
-                                        player.TSPlayer.Teleport((int)player.LastTilePos.X, (int)player.LastTilePos.Y + 3);
-                                        player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.MediumPurple);
-                                    }
-                                }
-                                else
-                                {
-                                    if (player.CurHouse != house.Name)
-                                    {
-                                        player.CurHouse = house.Name;
-                                        player.InHouse = true;
-
-                                        if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), player.CurHouse))
-                                            player.TSPlayer.SendMessage("Entered your house: '" + house.Name + "'", Color.MediumPurple);
-                                        else
+                                        if (!HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house.Name))
                                         {
-                                            player.TSPlayer.SendMessage("Entered the house: '" + house.Name + "'", Color.MediumPurple);
-                                            HTools.BroadcastToHouseOwners(player.CurHouse, "'" + player.TSPlayer.Name + "' Entered your house: " + player.CurHouse);
+                                            player.TSPlayer.Teleport((int)player.LastTilePos.X, (int)player.LastTilePos.Y + 3);
+                                            player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.MediumPurple);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (player.CurHouse != house.Name)
+                                        {
+                                            player.CurHouse = house.Name;
+                                            player.InHouse = true;
+
+                                            if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), player.CurHouse))
+                                                player.TSPlayer.SendMessage("Entered your house: '" + house.Name + "'", Color.MediumPurple);
+                                            else
+                                            {
+                                                player.TSPlayer.SendMessage("Entered the house: '" + house.Name + "'", Color.MediumPurple);
+                                                HTools.BroadcastToHouseOwners(player.CurHouse, "'" + player.TSPlayer.Name + "' Entered your house: " + player.CurHouse);
+                                            }
                                         }
                                     }
                                 }
+                                else
+                                    HousesNotIn++;
                             }
-                            else
-                                HousesNotIn++;
                         }
-                    }
 
-                    if (HConfig.NotifyOnExit)
-                    {
-                        if (HousesNotIn == HousingDistricts.Houses.Count && player.InHouse)
+                        if (HConfig.NotifyOnExit)
                         {
-                            if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), player.CurHouse))
-                                player.TSPlayer.SendMessage("Left your house: '" + player.CurHouse + "'", Color.MediumPurple);
-                            else
+                            if (HousesNotIn == HousingDistricts.Houses.Count && player.InHouse)
                             {
-                                player.TSPlayer.SendMessage("Left house: '" + player.CurHouse + "'", Color.MediumPurple);
-                                HTools.BroadcastToHouseOwners(player.CurHouse, "'" + player.TSPlayer.Name + "' Left your house: " + player.CurHouse);
+                                if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), player.CurHouse))
+                                    player.TSPlayer.SendMessage("Left your house: '" + player.CurHouse + "'", Color.MediumPurple);
+                                else
+                                {
+                                    player.TSPlayer.SendMessage("Left house: '" + player.CurHouse + "'", Color.MediumPurple);
+                                    HTools.BroadcastToHouseOwners(player.CurHouse, "'" + player.TSPlayer.Name + "' Left your house: " + player.CurHouse);
+                                }
+                                player.CurHouse = "";
+                                player.InHouse = false;
                             }
-                            player.CurHouse = "";
-                            player.InHouse = false;
                         }
+                        player.LastTilePos = new Vector2(player.TSPlayer.TileX, player.TSPlayer.TileY);
                     }
-                    player.LastTilePos = new Vector2(player.TSPlayer.TileX, player.TSPlayer.TileY);
                 }
             }
         }
@@ -235,9 +213,9 @@ namespace HousingDistricts
                 var tsplr = TShock.Players[msg.whoAmI];
                 foreach (House house in HousingDistricts.Houses)
                 {
-                    if (house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
+                    if (house.WorldID == Main.worldID.ToString() && house.ChatEnabled == 1 && house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)))
                     {
-                        HTools.BroadcastToHouse(house.ID, text, tsplr.Name);
+                        HTools.BroadcastToHouse(house, text, tsplr.Name);
                         e.Handled = true;
                     }
                 }

@@ -57,7 +57,7 @@ namespace HousingDistricts
                                 var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X);
                                 var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y);
 
-                                if (HouseTools.AddHouse(x, y, width, height, houseName, 0))
+                                if (HouseTools.AddHouse(x, y, width, height, houseName, 0, 0))
                                 {
                                     args.Player.TempPoints[0] = Point.Zero;
                                     args.Player.TempPoints[1] = Point.Zero;
@@ -179,7 +179,7 @@ namespace HousingDistricts
 
                         List<House> houses = new List<House>();
 
-                        foreach(House house in HousingDistricts.Houses)
+                        foreach (House house in HousingDistricts.Houses)
                         {
                             if (house.WorldID == Main.worldID.ToString())
                             {
@@ -258,7 +258,44 @@ namespace HousingDistricts
                             args.Player.SendMessage("Invalid syntax! Proper syntax: /house redefine [name]", Color.Red);
                         break;
                     }
-
+                case "stats":
+                    {
+                        if (args.Parameters.Count > 1)
+                        {
+                            var house = HouseTools.GetHouseByName(args.Parameters[1]);
+                            args.Player.SendMessage("Chat enabled: " + house.ChatEnabled.ToString());
+                        }
+                        break;
+                    }
+                case "chat":
+                    {
+                        if (args.Parameters.Count > 2)
+                        {
+                            if (args.Parameters[2].ToLower() == "on")
+                            {
+                                var house = HouseTools.GetHouseByName(args.Parameters[1]);
+                                house.ChatEnabled = 1;
+                                args.Player.SendMessage(house.Name + " chat is now enabled.");
+                            }
+                            else if (args.Parameters[2].ToLower() == "off")
+                            {
+                                var house = HouseTools.GetHouseByName(args.Parameters[1]);
+                                house.ChatEnabled = 0;
+                                args.Player.SendMessage(house.Name + " chat is now disabled.");
+                            }
+                            else
+                            {
+                                args.Player.SendMessage("Invalid syntax! Use /house chat <housename> on|off");
+                            }
+                        }
+                        else
+                        {
+                            var house = HouseTools.GetHouseByName(args.Parameters[1]);
+                            house.ChatEnabled = (house.ChatEnabled == 0 ? 1 : 0);
+                            args.Player.SendMessage(house.Name + " chat is now " + (house.ChatEnabled == 0 ? "disabled." : "enabled."));
+                        }
+                        break;
+                    }
             }
         }
 

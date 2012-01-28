@@ -16,8 +16,9 @@ namespace HousingDistricts
         public string Name { get; set; }
         public string WorldID { get; set; }
         public int Locked { get; set; }
+        public int ChatEnabled { get; set; }
 
-        public House(Rectangle housearea, List<string> owners, int id, string name, string worldid, int locked)
+        public House(Rectangle housearea, List<string> owners, int id, string name, string worldid, int locked, int chatenabled)
         {
             HouseArea = housearea;
             Owners = owners;
@@ -25,12 +26,13 @@ namespace HousingDistricts
             Name = name;
             WorldID = worldid;
             Locked = locked;
+            ChatEnabled = chatenabled;
         }
     }
 
     public class HouseTools
     {
-        public static bool AddHouse(int tx, int ty, int width, int height, string housename, int locked)
+        public static bool AddHouse(int tx, int ty, int width, int height, string housename, int locked, int chatenabled)
         {
             List<SqlValue> values = new List<SqlValue>();
             values.Add(new SqlValue("Name", "'" + housename + "'"));
@@ -41,8 +43,9 @@ namespace HousingDistricts
             values.Add(new SqlValue("Owners", "0"));
             values.Add(new SqlValue("WorldID", "'" + Main.worldID.ToString() + "'"));
             values.Add(new SqlValue("Locked", locked));
+            values.Add(new SqlValue("ChatEnabled", chatenabled));
             HousingDistricts.SQLEditor.InsertValues("HousingDistrict", values);
-            HousingDistricts.Houses.Add(new House(new Rectangle(tx, ty, width, height), new List<string>(), (HousingDistricts.Houses.Count + 1), housename, Main.worldID.ToString(), locked));
+            HousingDistricts.Houses.Add(new House(new Rectangle(tx, ty, width, height), new List<string>(), (HousingDistricts.Houses.Count + 1), housename, Main.worldID.ToString(), locked, chatenabled));
             return true;
         }
 
@@ -96,8 +99,9 @@ namespace HousingDistricts
                 var houseWorldID = house.WorldID;
                 var houseID = house.ID;
                 var houseLocked = house.Locked;
+                var houseChatEnabled = house.ChatEnabled;
                 HousingDistricts.Houses.Remove(house);
-                HousingDistricts.Houses.Add(new House(new Rectangle(tx, ty, width, height), houseOwners, houseID, houseName, Main.worldID.ToString(), houseLocked));
+                HousingDistricts.Houses.Add(new House(new Rectangle(tx, ty, width, height), houseOwners, houseID, houseName, Main.worldID.ToString(), houseLocked, houseChatEnabled));
                 List<SqlValue> wheres = new List<SqlValue>();
                 wheres.Add(new SqlValue("Name", "'" + houseName + "'"));
                 wheres.Add(new SqlValue("WorldID", "'" + Main.worldID.ToString() + "'"));

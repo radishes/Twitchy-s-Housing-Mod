@@ -31,19 +31,13 @@ namespace HousingDistricts
             }
         }
 
-        public static void BroadcastToHouse(int ID, string text, string playername)
+        public static void BroadcastToHouse(House house, string text, string playername)
         {
-            foreach (House house in HousingDistricts.Houses)
+            foreach (HPlayer player in HousingDistricts.HPlayers)
             {
-                if (house.ID == ID)
+                if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)))
                 {
-                    foreach (HPlayer player in HousingDistricts.HPlayers)
-                    {
-                        if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)))
-                        {
-                            player.TSPlayer.SendMessage("<House> <" + playername + ">: " + text, Color.Purple);
-                        }
-                    }
+                    player.TSPlayer.SendMessage("<House> <" + playername + ">: " + text, Color.Purple);
                 }
             }
         }
