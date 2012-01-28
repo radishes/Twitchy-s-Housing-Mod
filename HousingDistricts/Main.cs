@@ -27,7 +27,7 @@ namespace HousingDistricts
         }
         public override string Author
         {
-            get { return "Created by Twitchy"; }
+            get { return "Created by Twitchy, Edited by Dingo"; }
         }
         public override string Description
         {
@@ -35,7 +35,7 @@ namespace HousingDistricts
         }
         public override Version Version
         {
-            get { return new Version(1, 5); }
+            get { return new Version(1, 5, 1); }
         }
 
         public override void Initialize()

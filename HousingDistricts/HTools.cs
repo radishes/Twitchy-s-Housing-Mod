@@ -78,22 +78,46 @@ namespace HousingDistricts
                 }
             }
         }
-
-        public static bool OwnsHouse(string UserID, string housename)
+        public static void BroadcastToHouseOwners(House house, string text)
         {
-            foreach (House house in HousingDistricts.Houses)
+            foreach (string ID in house.Owners)
             {
-                if (house.Name == housename)
+                foreach (TSPlayer player in TShock.Players)
                 {
-                    foreach (string owner in house.Owners)
+                    if (player != null)
                     {
-                        if (owner == UserID)
-                            return true;
+                        if (player.UserID.ToString() == ID)
+                        {
+                            player.SendMessage(text, Color.MediumPurple);
+                        }
                     }
                 }
             }
+        }
+
+
+
+        public static bool OwnsHouse(string UserID, string housename)
+        {
+            var house = HouseTools.GetHouseByName(housename);
+            foreach (string owner in house.Owners)
+            {
+                if (owner == UserID)
+                    return true;
+            }
             return false;
         }
+        //kinda stupid to pass the house name when the calling method usually has the house object...
+        public static bool OwnsHouse(string UserID, House house)
+        {
+            foreach (string owner in house.Owners)
+            {
+                if (owner == UserID)
+                    return true;
+            }
+            return false;
+        }
+
 
         public static HPlayer GetPlayerByID(int id)
         {
