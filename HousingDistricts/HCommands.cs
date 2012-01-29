@@ -75,6 +75,7 @@ namespace HousingDistricts
                                             args.Player.TempPoints[0] = Point.Zero;
                                             args.Player.TempPoints[1] = Point.Zero;
                                             args.Player.SendMessage("Set house " + houseName, Color.Yellow);
+                                            HouseTools.AddNewUser(houseName, args.Player.UserID.ToString());
                                         }
                                         else
                                         {
@@ -125,21 +126,10 @@ namespace HousingDistricts
                         if (args.Parameters.Count > 2)
                         {
                             string playerName = args.Parameters[1];
-                            string houseName = "";
                             User playerID;
-
-                            for (int i = 2; i < args.Parameters.Count; i++)
-                            {
-                                if (houseName == "")
-                                {
-                                    houseName = args.Parameters[2];
-                                }
-                                else
-                                {
-                                    houseName = houseName + " " + args.Parameters[i];
-                                }
-                            }
-                            if (HTools.OwnsHouse(args.Player.Index.ToString(), houseName) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            var house = HouseTools.GetHouseByName(args.Parameters[2]);
+                            string houseName = house.Name;
+                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
                             {
                                 if ((playerID = TShock.Users.GetUserByName(playerName)) != null)
                                 {
@@ -170,7 +160,7 @@ namespace HousingDistricts
                         {
                             string houseName = args.Parameters[1];
                             var house = HouseTools.GetHouseByName(houseName);
-                            if (HTools.OwnsHouse(TShock.Users.GetUserByName(args.Player.Name).ID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
                             {
                                 List<SqlValue> where = new List<SqlValue>();
                                 where.Add(new SqlValue("Name", "'" + houseName + "'"));
@@ -353,6 +343,39 @@ namespace HousingDistricts
                         {
                             args.Player.SendMessage("Invalid syntax! Use /house chat <housename> (on|off)");
                         }
+                        break;
+                    }
+                case "addvisitor":
+                    {
+                        if (args.Parameters.Count > 2)
+                        {
+                            string playerName = args.Parameters[1];
+                            User playerID;
+                            var house = HouseTools.GetHouseByName(args.Parameters[2]);
+                            string houseName = house.Name;
+                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            {
+                                if ((playerID = TShock.Users.GetUserByName(playerName)) != null)
+                                {
+                                    if (HouseTools.AddNewVisitor(house, playerID.ID.ToString()))
+                                    {
+                                        args.Player.SendMessage("Added user " + playerName + " to " + houseName + "as a visitor.", Color.Yellow);
+                                    }
+                                    else
+                                        args.Player.SendMessage("House " + houseName + " not found", Color.Red);
+                                }
+                                else
+                                {
+                                    args.Player.SendMessage("Player " + playerName + " not found", Color.Red);
+                                }
+                            }
+                            else
+                            {
+                                args.Player.SendMessage("You do not own house: " + houseName);
+                            }
+                        }
+                        else
+                            args.Player.SendMessage("Invalid syntax! Proper syntax: /house addvisitor [name] [house]", Color.Red);
                         break;
                     }
             }

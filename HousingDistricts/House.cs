@@ -42,7 +42,7 @@ namespace HousingDistricts
             values.Add(new SqlValue("TopY", ty));
             values.Add(new SqlValue("BottomX", width));
             values.Add(new SqlValue("BottomY", height));
-            values.Add(new SqlValue("Owners", owner));
+            values.Add(new SqlValue("Owners", "0"));
             values.Add(new SqlValue("WorldID", "'" + Main.worldID.ToString() + "'"));
             values.Add(new SqlValue("Locked", locked));
             values.Add(new SqlValue("ChatEnabled", chatenabled));
