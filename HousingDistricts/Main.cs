@@ -9,6 +9,7 @@ using System.Threading;
 using System.ComponentModel;
 using System.IO;
 using System.Data;
+using System.Reflection;
 
 namespace HousingDistricts
 {
@@ -35,7 +36,7 @@ namespace HousingDistricts
         }
         public override Version Version
         {
-            get { return new Version(1, 5, 1); }
+            get { return new Version(1, 6, 0); }
         }
 
         public override void Initialize()
@@ -79,6 +80,7 @@ namespace HousingDistricts
             bool sethouse = false;
             bool edithouse = false;
             bool enterlocked = false;
+            bool adminhouse = false;
 
             foreach (Group group in TShock.Groups.groups)
             {
@@ -90,6 +92,8 @@ namespace HousingDistricts
                         edithouse = true;
                     if (group.HasPermission("enterlocked"))
                         enterlocked = true;
+                    if (group.HasPermission("adminhouse"))
+                        adminhouse = true;
                 }
             }
             List<string> perm = new List<string>();
@@ -99,6 +103,8 @@ namespace HousingDistricts
                 perm.Add("edithouse");
             if (!enterlocked)
                 perm.Add("enterlocked");
+            if (!adminhouse)
+                perm.Add("adminhouse");
             TShock.Groups.AddPermissions("trustedadmin", perm);
 
             var table = new SqlTable("HousingDistrict",
@@ -111,7 +117,8 @@ namespace HousingDistricts
                 new SqlColumn("Owners", MySqlDbType.Text),
                 new SqlColumn("WorldID", MySqlDbType.Text),
                 new SqlColumn("Locked", MySqlDbType.Int32),
-                new SqlColumn("ChatEnabled", MySqlDbType.Int32)
+                new SqlColumn("ChatEnabled", MySqlDbType.Int32),
+                new SqlColumn("Visitors", MySqlDbType.Text)
             );
             SQLWriter.EnsureExists(table);
         	var reader = TShock.DB.QueryReader("Select * from HousingDistrict");
@@ -126,8 +133,11 @@ namespace HousingDistricts
                 int chatenabled;
                 if (reader.Get<int>("ChatEnabled") == 1) { chatenabled = 1; }
                 else { chatenabled = 0; }
+                List<string> visitors = new List<string>();
+                foreach (string i in list)
+                    visitors.Add(i);
 				Houses.Add( new House( new Rectangle( reader.Get<int>("TopX"),reader.Get<int>("TopY"),reader.Get<int>("BottomX"),reader.Get<int>("BottomY") ), 
-					owners, id, reader.Get<string>("Name"), reader.Get<string>("WorldID"), locked, chatenabled));
+					owners, id, reader.Get<string>("Name"), reader.Get<string>("WorldID"), locked, chatenabled, visitors));
 			}
             #endregion
 
@@ -136,6 +146,7 @@ namespace HousingDistricts
             Commands.ChatCommands.Add(new Command("superadmin", HCommands.Convert, "converthouse"));
             Commands.ChatCommands.Add(new Command(HCommands.ChangeLock, "changelock"));
             Commands.ChatCommands.Add(new Command(HCommands.TellAll, "all"));
+            Commands.ChatCommands.Add(new Command("superadmin", HCommands.HouseReload, "housereload"));
             #endregion
         }
         public void OnUpdate()
@@ -155,7 +166,7 @@ namespace HousingDistricts
                                 {
                                     if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("enterlocked"))
                                     {
-                                        if (!HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house.Name))
+                                        if (!HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house) || !HTools.CanVisitHouse(player.TSPlayer.UserID.ToString(), house))
                                         {
                                             player.TSPlayer.Teleport((int)player.LastTilePos.X, (int)player.LastTilePos.Y + 3);
                                             player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.MediumPurple);

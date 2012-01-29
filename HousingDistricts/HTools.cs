@@ -117,7 +117,15 @@ namespace HousingDistricts
             }
             return false;
         }
-
+        public static bool CanVisitHouse(string UserID, House house)
+        {
+            foreach (string visitor in house.Visitors)
+            {
+                if (visitor == UserID)
+                    return true;
+            }
+            return false;
+        }
 
         public static HPlayer GetPlayerByID(int id)
         {

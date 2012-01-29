@@ -13,7 +13,11 @@ namespace HousingDistricts
         public bool HouseChatEnabled = true;
         public string HouseChatEnabled_description = "Global setting: False completely disables house chat.";
         public int MaxHouseSize = 5000;
-        public string MaxHouseSize_description = "Not yet implemented";
+        public string MaxHouseSize_description = "Maximum house size (width*height).";
+        public int MinHouseWidth = 10;
+        public string MinHouseWidth_description = "Minimum house width, for protection from griefer use of /house.";
+        public int MinHouseHeight = 5;
+        public string MinHouseHeight_description = "Minimum house height, for protection from griefer use of /house.";
         public int MaxHousesByUsername = 3;
         public string MaxHousesByUsername_description = "Not yet implemented";
         public int MaxHousesByIP = 3;
