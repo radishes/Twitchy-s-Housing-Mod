@@ -99,23 +99,40 @@ namespace HousingDistricts
 
         public static bool OwnsHouse(string UserID, string housename)
         {
-            var house = HouseTools.GetHouseByName(housename);
-            foreach (string owner in house.Owners)
+            try
             {
-                if (owner == UserID)
-                    return true;
+                var house = HouseTools.GetHouseByName(housename);
+                foreach (string owner in house.Owners)
+                {
+                    if (owner == UserID)
+                        return true;
+                }
+                return false;
             }
-            return false;
+            catch (Exception ex)
+            {
+                Log.Error(ex.ToString());
+                return false;
+            }
+
         }
         //kinda stupid to pass the house name when the calling method usually has the house object...
         public static bool OwnsHouse(string UserID, House house)
         {
-            foreach (string owner in house.Owners)
+            try
             {
-                if (owner == UserID)
-                    return true;
+                foreach (string owner in house.Owners)
+                {
+                    if (owner == UserID)
+                        return true;
+                }
+                return false;
             }
-            return false;
+            catch (Exception ex)
+            {
+                Log.Error(ex.ToString());
+                return false;
+            }
         }
         public static bool CanVisitHouse(string UserID, House house)
         {

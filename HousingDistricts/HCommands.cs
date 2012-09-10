@@ -36,12 +36,15 @@ namespace HousingDistricts
                             int.TryParse(args.Parameters[1], out choice) &&
                             choice >= 1 && choice <= 2)
                         {
-                            args.Player.SendMessage("Hit a block to Set Vector2 " + choice, Color.Yellow);
+                            if (choice == 1)
+                                args.Player.SendMessage("Now hit the TOP-LEFT block of the area to be protected.", Color.Yellow);
+                            if (choice == 2)
+                                args.Player.SendMessage("Now hit the BOTTOM-RIGHT block of the area to be protected.", Color.Yellow);
                             args.Player.AwaitingTempPoint = choice;
                         }
                         else
                         {
-                            args.Player.SendMessage("Invalid syntax! Proper syntax: /region set [1/2]", Color.Red);
+                            args.Player.SendMessage("Invalid syntax! Proper syntax: /house set [1/2]", Color.Red);
                         }
                         break;
                     }
@@ -74,7 +77,7 @@ namespace HousingDistricts
                                         {
                                             args.Player.TempPoints[0] = Point.Zero;
                                             args.Player.TempPoints[1] = Point.Zero;
-                                            args.Player.SendMessage("Set house " + houseName, Color.Yellow);
+                                            args.Player.SendMessage("You have created new house " + houseName, Color.Yellow);
                                             HouseTools.AddNewUser(houseName, args.Player.UserID.ToString());
                                         }
                                         else
@@ -376,6 +379,15 @@ namespace HousingDistricts
                         }
                         else
                             args.Player.SendMessage("Invalid syntax! Proper syntax: /house addvisitor [name] [house]", Color.Red);
+                        break;
+                    }
+                default:
+                    {
+                        args.Player.SendMessage("To create a house, use these commands:", Color.Red);
+                        args.Player.SendMessage("/house set 1", Color.Red);
+                        args.Player.SendMessage("/house set 2", Color.Red);
+                        args.Player.SendMessage("/house add HouseName", Color.Red);
+                        args.Player.SendMessage("Other /house commands: list, allow, name, delete, clear", Color.Red);
                         break;
                     }
             }

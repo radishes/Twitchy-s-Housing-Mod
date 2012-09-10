@@ -13,7 +13,7 @@ using System.Reflection;
 
 namespace HousingDistricts
 {
-    [APIVersion(1, 11)]
+    [APIVersion(1, 12)]
     public class HousingDistricts : TerrariaPlugin
     {
         public static HConfigFile HConfig { get; set; }
@@ -28,15 +28,15 @@ namespace HousingDistricts
         }
         public override string Author
         {
-            get { return "Created by Twitchy, Edited by Dingo"; }
+            get { return "Created by Twitchy, edited by Dingo. Updated for 1.12 by radishes."; }
         }
         public override string Description
         {
-            get { return ""; }
+            get { return "Housing Districts 1.6.1"; }
         }
         public override Version Version
         {
-            get { return new Version(1, 6, 0); }
+            get { return new Version(1, 6, 1); }
         }
 
         public override void Initialize()
@@ -158,40 +158,56 @@ namespace HousingDistricts
                     foreach (HPlayer player in HPlayers)
                     {
                         int HousesNotIn = 0;
-                        foreach (House house in HousingDistricts.Houses)
+                        try
                         {
-                            if (HConfig.NotifyOnEntry)
+                            foreach (House house in HousingDistricts.Houses)
                             {
-                                if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
+                                try
                                 {
-                                    if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("enterlocked"))
+                                    if (HConfig.NotifyOnEntry)
                                     {
-                                        if (!HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house) || !HTools.CanVisitHouse(player.TSPlayer.UserID.ToString(), house))
+                                        if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
                                         {
-                                            player.TSPlayer.Teleport((int)player.LastTilePos.X, (int)player.LastTilePos.Y + 3);
-                                            player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.MediumPurple);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (player.CurHouse != house.Name)
-                                        {
-                                            player.CurHouse = house.Name;
-                                            player.InHouse = true;
-
-                                            if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), player.CurHouse))
-                                                player.TSPlayer.SendMessage("Entered your house: '" + house.Name + "'", Color.MediumPurple);
+                                            if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("enterlocked"))
+                                            {
+                                                if (!HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house) || !HTools.CanVisitHouse(player.TSPlayer.UserID.ToString(), house))
+                                                {
+                                                    player.TSPlayer.Teleport((int)player.LastTilePos.X, (int)player.LastTilePos.Y + 3);
+                                                    player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.MediumPurple);
+                                                }
+                                            }
                                             else
                                             {
-                                                player.TSPlayer.SendMessage("Entered the house: '" + house.Name + "'", Color.MediumPurple);
-                                                HTools.BroadcastToHouseOwners(player.CurHouse, "'" + player.TSPlayer.Name + "' Entered your house: " + player.CurHouse);
+                                                if (player.CurHouse != house.Name)
+                                                {
+                                                    player.CurHouse = house.Name;
+                                                    player.InHouse = true;
+
+                                                    if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), player.CurHouse))
+                                                        player.TSPlayer.SendMessage("Entered your house: '" + house.Name + "'", Color.MediumPurple);
+                                                    else
+                                                    {
+                                                        player.TSPlayer.SendMessage("Entered the house: '" + house.Name + "'", Color.MediumPurple);
+                                                        HTools.BroadcastToHouseOwners(player.CurHouse, "'" + player.TSPlayer.Name + "' Entered your house: " + player.CurHouse);
+                                                    }
+                                                }
                                             }
                                         }
+                                        else
+                                            HousesNotIn++;
                                     }
                                 }
-                                else
-                                    HousesNotIn++;
+                                catch (Exception ex)
+                                {
+                                    Log.Error(ex.ToString());
+                                    continue;
+                                }
                             }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Error(ex.ToString());
+                            continue;
                         }
 
                         if (HConfig.NotifyOnExit)

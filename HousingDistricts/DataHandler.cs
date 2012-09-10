@@ -24,6 +24,7 @@ using Terraria;
 using TShockAPI;
 using TShockAPI.Net;
 using System.IO.Streams;
+using System.Linq;
 
 namespace HousingDistricts
 {
@@ -132,7 +133,19 @@ namespace HousingDistricts
             {
                 args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].X = x;
                 args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].Y = y;
-                args.Player.SendMessage("Set Temp Vector2 " + args.Player.AwaitingTempPoint, Color.Yellow);
+                if (args.Player.AwaitingTempPoint == 1)
+                {
+                    args.Player.SendMessage("Top-left corner of house has been set!", Color.Yellow);
+                }
+                if (args.Player.AwaitingTempPoint == 2)
+                {
+                    args.Player.SendMessage("Bottom-right corner of house has been set!", Color.Yellow);
+                }
+                if (!args.Player.TempPoints.Any(p => p == Point.Zero))
+                {
+                    args.Player.SendMessage("Top-left and bottom-right points are both set! Now use /house add", Color.Yellow);
+                }
+
                 args.Player.SendTileSquare(x, y);
                 args.Player.AwaitingTempPoint = 0;
                 return true;
