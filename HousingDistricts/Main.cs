@@ -32,11 +32,11 @@ namespace HousingDistricts
         }
         public override string Description
         {
-            get { return "Housing Districts 1.6.1"; }
+            get { return "Housing Districts 1.6.2"; }
         }
         public override Version Version
         {
-            get { return new Version(1, 6, 1); }
+            get { return new Version(1, 6, 2); }
         }
 
         public override void Initialize()
