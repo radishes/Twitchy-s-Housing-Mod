@@ -87,7 +87,7 @@ namespace HousingDistricts
                                     }
                                     else
                                     {
-                                        if ((width * height) <= HousingDistricts.HConfig.MaxHouseSize)
+                                        if ((width * height) >= HousingDistricts.HConfig.MaxHouseSize)
                                         {
                                             args.Player.SendMessage("Your house exceeds the maximum size of " + HousingDistricts.HConfig.MaxHouseSize.ToString() + "blocks.", Color.Yellow);
                                             args.Player.SendMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.", Color.Yellow);

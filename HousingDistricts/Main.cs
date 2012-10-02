@@ -32,11 +32,11 @@ namespace HousingDistricts
         }
         public override string Description
         {
-            get { return "Housing Districts 1.6.1"; }
+            get { return "Housing Districts 1.6.3"; }
         }
         public override Version Version
         {
-            get { return new Version(1, 6, 1); }
+            get { return new Version(1, 6, 3); }
         }
 
         public override void Initialize()
@@ -187,7 +187,7 @@ namespace HousingDistricts
                                                         player.TSPlayer.SendMessage("Entered your house: '" + house.Name + "'", Color.MediumPurple);
                                                     else
                                                     {
-                                                        player.TSPlayer.SendMessage("Entered the house: '" + house.Name + "'", Color.MediumPurple);
+                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME",house.Name), Color.MediumPurple);
                                                         HTools.BroadcastToHouseOwners(player.CurHouse, "'" + player.TSPlayer.Name + "' Entered your house: " + player.CurHouse);
                                                     }
                                                 }
@@ -218,7 +218,7 @@ namespace HousingDistricts
                                     player.TSPlayer.SendMessage("Left your house: '" + player.CurHouse + "'", Color.MediumPurple);
                                 else
                                 {
-                                    player.TSPlayer.SendMessage("Left house: '" + player.CurHouse + "'", Color.MediumPurple);
+                                    player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", player.CurHouse), Color.MediumPurple);
                                     HTools.BroadcastToHouseOwners(player.CurHouse, "'" + player.TSPlayer.Name + "' Left your house: " + player.CurHouse);
                                 }
                                 player.CurHouse = "";

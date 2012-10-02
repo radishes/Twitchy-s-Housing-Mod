@@ -135,16 +135,16 @@ namespace HousingDistricts
                 args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].Y = y;
                 if (args.Player.AwaitingTempPoint == 1)
                 {
-                    args.Player.SendMessage("Top-left corner of house has been set!", Color.Yellow);
+                    args.Player.SendMessage("Top-left corner of protection area has been set!", Color.Yellow);
                 }
                 if (args.Player.AwaitingTempPoint == 2)
                 {
-                    args.Player.SendMessage("Bottom-right corner of house has been set!", Color.Yellow);
+                    args.Player.SendMessage("Bottom-right corner of protection area has been set!", Color.Yellow);
                 }
-                if (!args.Player.TempPoints.Any(p => p == Point.Zero))
-                {
-                    args.Player.SendMessage("Top-left and bottom-right points are both set! Now use /house add", Color.Yellow);
-                }
+                //if (!args.Player.TempPoints.Any(p => p == Point.Zero))
+                //{
+                //     args.Player.SendMessage("Top-left and bottom-right points are both set", Color.Yellow);
+                //}
 
                 args.Player.SendTileSquare(x, y);
                 args.Player.AwaitingTempPoint = 0;
