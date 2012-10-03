@@ -157,6 +157,7 @@ namespace HousingDistricts
                 {
                     foreach (HPlayer player in HPlayers)
                     {
+                        List<string> NewCurHouses = new List<string>(player.CurHouses);
                         int HousesNotIn = 0;
                         try
                         {
@@ -178,23 +179,24 @@ namespace HousingDistricts
                                             }
                                             else
                                             {
-                                                if (player.CurHouse != house.Name)
+                                                if (!player.CurHouses.Contains(house.Name))
                                                 {
-                                                    player.CurHouse = house.Name;
-                                                    player.InHouse = true;
-
-                                                    if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), player.CurHouse))
+                                                    NewCurHouses.Add(house.Name);
+                                                    if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house.Name))
                                                         player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseEntryString.Replace("$HOUSE_NAME", house.Name), Color.MediumPurple);
                                                     else
                                                     {
-                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME",house.Name), Color.MediumPurple);
-                                                        HTools.BroadcastToHouseOwners(player.CurHouse, HConfig.NotifyOnOtherEntryString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", player.CurHouse));
+                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME", house.Name), Color.MediumPurple);
+                                                        HTools.BroadcastToHouseOwners(house.Name, HConfig.NotifyOnOtherEntryString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", house.Name));
                                                     }
                                                 }
                                             }
                                         }
                                         else
+                                        {
+                                            NewCurHouses.Remove(house.Name);
                                             HousesNotIn++;
+                                        }
                                     }
                                 }
                                 catch (Exception ex)
@@ -212,19 +214,26 @@ namespace HousingDistricts
 
                         if (HConfig.NotifyOnExit)
                         {
-                            if (HousesNotIn == HousingDistricts.Houses.Count && player.InHouse)
+                          //  if (HousesNotIn == HousingDistricts.Houses.Count)
                             {
-                                if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), player.CurHouse))
-                                    player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseExitString.Replace("$HOUSE_NAME", player.CurHouse), Color.MediumPurple);
-                                else
+                                foreach (string cHouse in player.CurHouses)
                                 {
-                                    player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", player.CurHouse), Color.MediumPurple);
-                                    HTools.BroadcastToHouseOwners(player.CurHouse, HConfig.NotifyOnOtherExitString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", player.CurHouse));
+                                    if (!NewCurHouses.Contains(cHouse))
+                                    {
+                                        if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), cHouse))
+                                            player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseExitString.Replace("$HOUSE_NAME", cHouse), Color.MediumPurple);
+                                        else
+                                        {
+                                            player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", cHouse), Color.MediumPurple);
+                                            HTools.BroadcastToHouseOwners(cHouse, HConfig.NotifyOnOtherExitString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", cHouse));
+                                        }
+                                        //NewCurHouses.Remove(cHouse);
+                                    }
                                 }
-                                player.CurHouse = "";
-                                player.InHouse = false;
                             }
+                            
                         }
+                        player.CurHouses = NewCurHouses;
                         player.LastTilePos = new Vector2(player.TSPlayer.TileX, player.TSPlayer.TileY);
                     }
                 }

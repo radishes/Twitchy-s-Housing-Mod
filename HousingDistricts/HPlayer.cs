@@ -10,24 +10,21 @@ namespace HousingDistricts
     {
         public int Index { get; set; }
         public TSPlayer TSPlayer { get { return TShock.Players[Index]; } }
-        public string CurHouse { get; set; }
-        public bool InHouse { get; set; }
+        public List<string> CurHouses { get; set; }
         public Vector2 LastTilePos { get; set; }
         public bool AwaitingHouseName { get; set; }
 
         public HPlayer()
         {
             Index = -1;
-            InHouse = false;
-            CurHouse = "";
+            CurHouses = new List<string>();
             LastTilePos = Vector2.Zero;
         }
 
         public HPlayer(int index, Vector2 lasttilepos)
         {
             Index = index;
-            InHouse = false;
-            CurHouse = "";
+            CurHouses = new List<string>();
             LastTilePos = lasttilepos;
         }
     }

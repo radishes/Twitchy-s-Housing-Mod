@@ -80,7 +80,7 @@ namespace HousingDistricts
                                         Rectangle newHouseR = new Rectangle(x, y, width, height);
                                         foreach (House house in HousingDistricts.Houses)
                                         {
-                                            if (newHouseR.Intersects(house.HouseArea) && !userOwnedHouses.Contains(house.ID))
+                                            if ((newHouseR.Intersects(house.HouseArea) && !userOwnedHouses.Contains(house.ID)) && !HousingDistricts.HConfig.OverlapHouses)
                                             { // user is allowed to intersect their own house
                                                 args.Player.SendMessage("Your selected area overlaps another players' house, which is not allowed.", Color.Red);
                                                 return;

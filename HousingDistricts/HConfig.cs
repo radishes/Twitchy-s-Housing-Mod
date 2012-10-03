@@ -34,6 +34,8 @@ namespace HousingDistricts
         public string MaxHousesByUsername_description = "Not yet implemented";
         public int MaxHousesByIP = 10;
         public string MaxHousesByIP_description = "Not yet implemented";
+        public bool OverlapHouses = false;
+        public string OverlapHouses_description = "Can players create houses that overlap another players' house?";
 
         public static HConfigFile Read(string path)
         {
