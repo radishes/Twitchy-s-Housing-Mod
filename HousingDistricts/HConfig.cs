@@ -8,8 +8,12 @@ namespace HousingDistricts
     {
         public bool NotifyOnEntry = true;
         public string NotifyOnEntry_description = "Global setting: Notifies the owner of the house and the user who entered the house when the user enters.";
+        public string NotifyOnEntryString = "You have entered the house: '$HOUSE_NAME'";
+        public string NotifyOnEntryString_description = "The string presented to players when they enter a house.";
         public bool NotifyOnExit = true;
         public string NotifyOnExit_description = "Global setting: Notifies the owner of the house and the user who exited the house when the user exits.";
+        public string NotifyOnExitString = "You have left the house: '$HOUSE_NAME'";
+        public string NotifyOnExitString_description = "The string presented to players when they leave a house.";
         public bool HouseChatEnabled = true;
         public string HouseChatEnabled_description = "Global setting: False completely disables house chat.";
         public int MaxHouseSize = 5000;
@@ -18,9 +22,9 @@ namespace HousingDistricts
         public string MinHouseWidth_description = "Minimum house width, for protection from griefer use of /house.";
         public int MinHouseHeight = 5;
         public string MinHouseHeight_description = "Minimum house height, for protection from griefer use of /house.";
-        public int MaxHousesByUsername = 3;
+        public int MaxHousesByUsername = 10;
         public string MaxHousesByUsername_description = "Not yet implemented";
-        public int MaxHousesByIP = 3;
+        public int MaxHousesByIP = 10;
         public string MaxHousesByIP_description = "Not yet implemented";
 
         public static HConfigFile Read(string path)
