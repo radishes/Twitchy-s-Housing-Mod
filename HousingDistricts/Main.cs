@@ -28,15 +28,15 @@ namespace HousingDistricts
         }
         public override string Author
         {
-            get { return "Created by Twitchy, edited by Dingo. Updated for 1.12 by radishes."; }
+            get { return "By Twitchy, Dingo, and radishes."; }
         }
         public override string Description
         {
-            get { return "Housing Districts 1.6.3"; }
+            get { return "Housing Districts 1.6.4"; }
         }
         public override Version Version
         {
-            get { return new Version(1, 6, 3); }
+            get { return new Version(1, 6, 4); }
         }
 
         public override void Initialize()
@@ -184,11 +184,11 @@ namespace HousingDistricts
                                                     player.InHouse = true;
 
                                                     if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), player.CurHouse))
-                                                        player.TSPlayer.SendMessage("Entered your house: '" + house.Name + "'", Color.MediumPurple);
+                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseEntryString.Replace("$HOUSE_NAME", house.Name), Color.MediumPurple);
                                                     else
                                                     {
                                                         player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME",house.Name), Color.MediumPurple);
-                                                        HTools.BroadcastToHouseOwners(player.CurHouse, "'" + player.TSPlayer.Name + "' Entered your house: " + player.CurHouse);
+                                                        HTools.BroadcastToHouseOwners(player.CurHouse, HConfig.NotifyOnOtherEntryString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", player.CurHouse));
                                                     }
                                                 }
                                             }
@@ -215,11 +215,11 @@ namespace HousingDistricts
                             if (HousesNotIn == HousingDistricts.Houses.Count && player.InHouse)
                             {
                                 if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), player.CurHouse))
-                                    player.TSPlayer.SendMessage("Left your house: '" + player.CurHouse + "'", Color.MediumPurple);
+                                    player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseExitString.Replace("$HOUSE_NAME", player.CurHouse), Color.MediumPurple);
                                 else
                                 {
                                     player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", player.CurHouse), Color.MediumPurple);
-                                    HTools.BroadcastToHouseOwners(player.CurHouse, "'" + player.TSPlayer.Name + "' Left your house: " + player.CurHouse);
+                                    HTools.BroadcastToHouseOwners(player.CurHouse, HConfig.NotifyOnOtherExitString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", player.CurHouse));
                                 }
                                 player.CurHouse = "";
                                 player.InHouse = false;

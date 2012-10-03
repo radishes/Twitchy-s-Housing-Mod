@@ -52,16 +52,20 @@ namespace HousingDistricts
                     {
                         if (args.Parameters.Count > 1)
                         {
-                            var userHouseCount = 0;
+                            List<int> userOwnedHouses = new List<int>();
                             foreach (House house in HousingDistricts.Houses)
                             {
                                 foreach (string owner in house.Owners)
                                 {
                                     if (args.Player.UserID.ToString() == owner)
-                                        userHouseCount++;
+                                    {
+                                        userOwnedHouses.Add(house.ID);
+                                        break;
+                                    }
+
                                 }
                             }
-                            if (userHouseCount < HousingDistricts.HConfig.MaxHousesByUsername || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (userOwnedHouses.Count() < HousingDistricts.HConfig.MaxHousesByUsername || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
                             {
                                 if (!args.Player.TempPoints.Any(p => p == Point.Zero))
                                 {
@@ -73,6 +77,15 @@ namespace HousingDistricts
                                     var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y);
                                     if ((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight)
                                     {
+                                        Rectangle newHouseR = new Rectangle(x, y, width, height);
+                                        foreach (House house in HousingDistricts.Houses)
+                                        {
+                                            if (newHouseR.Intersects(house.HouseArea) && !userOwnedHouses.Contains(house.ID))
+                                            { // user is allowed to intersect their own house
+                                                args.Player.SendMessage("Your selected area overlaps another players' house, which is not allowed.", Color.Red);
+                                                return;
+                                            }
+                                        }
                                         if (HouseTools.AddHouse(x, y, width, height, houseName, args.Player.UserID.ToString(), 0, 0))
                                         {
                                             args.Player.TempPoints[0] = Point.Zero;
