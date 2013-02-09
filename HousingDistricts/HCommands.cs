@@ -65,7 +65,7 @@ namespace HousingDistricts
 
                                 }
                             }
-                            if (userOwnedHouses.Count() < HousingDistricts.HConfig.MaxHousesByUsername || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (userOwnedHouses.Count < HousingDistricts.HConfig.MaxHousesByUsername || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
                             {
                                 if (!args.Player.TempPoints.Any(p => p == Point.Zero))
                                 {
@@ -179,7 +179,7 @@ namespace HousingDistricts
                             if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
                             {
                                 List<SqlValue> where = new List<SqlValue>();
-                                where.Add(new SqlValue("Name", "'" + houseName + "'"));
+                                where.Add(new SqlValue("Name", "'" + houseName.Replace("'", "''") + "'"));
                                 HousingDistricts.SQLWriter.DeleteRow("HousingDistrict", where);
                                 HousingDistricts.Houses.Remove(house);
                                 args.Player.SendMessage("House: " + houseName + " deleted", Color.Yellow);
