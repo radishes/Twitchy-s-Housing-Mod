@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Drawing;
 using TShockAPI;
+using Terraria;
 
 namespace HousingDistricts
 {
@@ -46,8 +47,9 @@ namespace HousingDistricts
         {
             foreach (House house in HousingDistricts.Houses)
             {
-                if (x >= house.HouseArea.Left && x <= house.HouseArea.Right &&
-                    y >= house.HouseArea.Top && y <= house.HouseArea.Bottom)
+                if (house.WorldID == Main.worldID.ToString() &&
+                    x >= house.HouseArea.Left && x < house.HouseArea.Right &&
+                    y >= house.HouseArea.Top && y < house.HouseArea.Bottom)
                 {
                     return house.Name;
                 }
