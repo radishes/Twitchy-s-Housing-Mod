@@ -143,7 +143,7 @@ namespace HousingDistricts
                         {
                             string playerName = args.Parameters[1];
                             User playerID;
-                            var house = HouseTools.GetHouseByName(args.Parameters[2]);
+                            var house = HouseTools.GetHouseByName(String.Join(" ", args.Parameters.GetRange(2, args.Parameters.Count - 1)));
                             string houseName = house.Name;
                             if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
                             {
@@ -174,7 +174,7 @@ namespace HousingDistricts
                     {
                         if (args.Parameters.Count > 1)
                         {
-                            string houseName = args.Parameters[1];
+                            string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
                             var house = HouseTools.GetHouseByName(houseName);
                             if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
                             {
