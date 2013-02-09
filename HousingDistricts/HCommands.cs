@@ -73,8 +73,8 @@ namespace HousingDistricts
 
                                     var x = Math.Min(args.Player.TempPoints[0].X, args.Player.TempPoints[1].X);
                                     var y = Math.Min(args.Player.TempPoints[0].Y, args.Player.TempPoints[1].Y);
-                                    var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X);
-                                    var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y);
+                                    var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X) + 1;
+                                    var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y) + 1;
                                     if ((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight)
                                     {
                                         Rectangle newHouseR = new Rectangle(x, y, width, height);
@@ -282,8 +282,8 @@ namespace HousingDistricts
                                 {
                                     var x = Math.Min(args.Player.TempPoints[0].X, args.Player.TempPoints[1].X);
                                     var y = Math.Min(args.Player.TempPoints[0].Y, args.Player.TempPoints[1].Y);
-                                    var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X);
-                                    var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y);
+                                    var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X) + 1;
+                                    var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y) + 1;
 
                                     if (HouseTools.RedefineHouse(x, y, width, height, houseName))
                                     {
