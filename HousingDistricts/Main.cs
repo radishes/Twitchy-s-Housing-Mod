@@ -149,8 +149,15 @@ namespace HousingDistricts
             Commands.ChatCommands.Add(new Command("superadmin", HCommands.HouseReload, "housereload"));
             #endregion
         }
+
+        private DateTime PrevUpdateTime;
         public void OnUpdate()
         {
+            if (DateTime.Now < PrevUpdateTime + TimeSpan.FromMilliseconds(500))
+                return;
+            else
+              PrevUpdateTime = DateTime.Now;
+
             if (HConfig.NotifyOnEntry || HConfig.NotifyOnExit)
             {
                 lock (HPlayers)
