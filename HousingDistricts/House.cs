@@ -145,7 +145,7 @@ namespace HousingDistricts
                         new SqlValue("BottomY", height),
                     }, 
                     new List<SqlValue> {
-                      /* Note: TShock generates an invalid sql expression when multiple where's are used. */
+                      /* Note: TShock generates an invalid sql expression when multiple wheres are used. */
                         new SqlValue("Name", "'" + houseName.Replace("'", "''") + "'"),
                     }
                 );
