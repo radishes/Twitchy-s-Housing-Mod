@@ -65,7 +65,7 @@ namespace HousingDistricts
 
                                 }
                             }
-                            if (userOwnedHouses.Count() < HousingDistricts.HConfig.MaxHousesByUsername || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (userOwnedHouses.Count < HousingDistricts.HConfig.MaxHousesByUsername || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
                             {
                                 if (!args.Player.TempPoints.Any(p => p == Point.Zero))
                                 {
@@ -73,14 +73,14 @@ namespace HousingDistricts
 
                                     var x = Math.Min(args.Player.TempPoints[0].X, args.Player.TempPoints[1].X);
                                     var y = Math.Min(args.Player.TempPoints[0].Y, args.Player.TempPoints[1].Y);
-                                    var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X);
-                                    var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y);
+                                    var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X) + 1;
+                                    var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y) + 1;
                                     if ((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight)
                                     {
                                         Rectangle newHouseR = new Rectangle(x, y, width, height);
                                         foreach (House house in HousingDistricts.Houses)
                                         {
-                                            if ((newHouseR.Intersects(house.HouseArea) && !userOwnedHouses.Contains(house.ID)) && !HousingDistricts.HConfig.OverlapHouses)
+                                            if (house.WorldID == Main.worldID.ToString() && (newHouseR.Intersects(house.HouseArea) && !userOwnedHouses.Contains(house.ID)) && !HousingDistricts.HConfig.OverlapHouses)
                                             { // user is allowed to intersect their own house
                                                 args.Player.SendMessage("Your selected area overlaps another players' house, which is not allowed.", Color.Red);
                                                 return;
@@ -143,7 +143,7 @@ namespace HousingDistricts
                         {
                             string playerName = args.Parameters[1];
                             User playerID;
-                            var house = HouseTools.GetHouseByName(args.Parameters[2]);
+                            var house = HouseTools.GetHouseByName(String.Join(" ", args.Parameters.GetRange(2, args.Parameters.Count - 2)));
                             string houseName = house.Name;
                             if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
                             {
@@ -174,12 +174,12 @@ namespace HousingDistricts
                     {
                         if (args.Parameters.Count > 1)
                         {
-                            string houseName = args.Parameters[1];
+                            string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
                             var house = HouseTools.GetHouseByName(houseName);
                             if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
                             {
                                 List<SqlValue> where = new List<SqlValue>();
-                                where.Add(new SqlValue("Name", "'" + houseName + "'"));
+                                where.Add(new SqlValue("Name", "'" + houseName.Replace("'", "''") + "'"));
                                 HousingDistricts.SQLWriter.DeleteRow("HousingDistrict", where);
                                 HousingDistricts.Houses.Remove(house);
                                 args.Player.SendMessage("House: " + houseName + " deleted", Color.Yellow);
@@ -282,18 +282,54 @@ namespace HousingDistricts
                                 {
                                     var x = Math.Min(args.Player.TempPoints[0].X, args.Player.TempPoints[1].X);
                                     var y = Math.Min(args.Player.TempPoints[0].Y, args.Player.TempPoints[1].Y);
-                                    var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X);
-                                    var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y);
+                                    var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X) + 1;
+                                    var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y) + 1;
 
-                                    if (HouseTools.RedefineHouse(x, y, width, height, houseName))
+                                    if ((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight)
                                     {
-                                        args.Player.TempPoints[0] = Point.Zero;
-                                        args.Player.TempPoints[1] = Point.Zero;
-                                        args.Player.SendMessage("Redefined house " + houseName, Color.Yellow);
+                                        Rectangle newHouseR = new Rectangle(x, y, width, height);
+                                        foreach (House house in HousingDistricts.Houses)
+                                        {
+                                            if (house.WorldID == Main.worldID.ToString() && (newHouseR.Intersects(house.HouseArea) && !house.Owners.Contains(args.Player.UserID.ToString())) && !HousingDistricts.HConfig.OverlapHouses)
+                                            { // user is allowed to intersect their own house
+                                                args.Player.SendMessage("Your selected area overlaps another players' house, which is not allowed.", Color.Red);
+                                                return;
+                                            }
+                                        }
+                                        if (HouseTools.RedefineHouse(x, y, width, height, houseName))
+                                        {
+                                            args.Player.TempPoints[0] = Point.Zero;
+                                            args.Player.TempPoints[1] = Point.Zero;
+                                            args.Player.SendMessage("Redefined house " + houseName, Color.Yellow);
+                                        }
+                                        else
+                                        {
+                                            args.Player.SendMessage("Error redefining house " + houseName, Color.Red);
+                                        }
                                     }
                                     else
                                     {
-                                        args.Player.SendMessage("Error redefining house " + houseName, Color.Red);
+                                        if ((width * height) >= HousingDistricts.HConfig.MaxHouseSize)
+                                        {
+                                            args.Player.SendMessage("Your house exceeds the maximum size of " + HousingDistricts.HConfig.MaxHouseSize.ToString() + "blocks.", Color.Yellow);
+                                            args.Player.SendMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.", Color.Yellow);
+                                            args.Player.TempPoints[0] = Point.Zero;
+                                            args.Player.TempPoints[1] = Point.Zero;
+                                        }
+                                        else if (width < HousingDistricts.HConfig.MinHouseWidth)
+                                        {
+                                            args.Player.SendMessage("Your house width is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseWidth.ToString() + "blocks.", Color.Yellow);
+                                            args.Player.SendMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.", Color.Yellow);
+                                            args.Player.TempPoints[0] = Point.Zero;
+                                            args.Player.TempPoints[1] = Point.Zero;
+                                        }
+                                        else
+                                        {
+                                            args.Player.SendMessage("Your house height is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseHeight.ToString() + "blocks.", Color.Yellow);
+                                            args.Player.SendMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.", Color.Yellow);
+                                            args.Player.TempPoints[0] = Point.Zero;
+                                            args.Player.TempPoints[1] = Point.Zero;
+                                        }
                                     }
                                 }
                                 else

@@ -28,15 +28,15 @@ namespace HousingDistricts
         }
         public override string Author
         {
-            get { return "By Twitchy, Dingo, and radishes."; }
+            get { return "By Twitchy, Dingo, radishes and CoderCow."; }
         }
         public override string Description
         {
-            get { return "Housing Districts 1.6.4"; }
+            get { return "Housing Districts 1.6.5"; }
         }
         public override Version Version
         {
-            get { return new Version(1, 6, 4); }
+            get { return new Version(1, 6, 5); }
         }
 
         public override void Initialize()
@@ -149,8 +149,15 @@ namespace HousingDistricts
             Commands.ChatCommands.Add(new Command("superadmin", HCommands.HouseReload, "housereload"));
             #endregion
         }
+
+        private DateTime PrevUpdateTime;
         public void OnUpdate()
         {
+            if (DateTime.Now < PrevUpdateTime + TimeSpan.FromMilliseconds(500))
+                return;
+            else
+              PrevUpdateTime = DateTime.Now;
+
             if (HConfig.NotifyOnEntry || HConfig.NotifyOnExit)
             {
                 lock (HPlayers)

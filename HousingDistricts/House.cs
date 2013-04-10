@@ -37,7 +37,7 @@ namespace HousingDistricts
         public static bool AddHouse(int tx, int ty, int width, int height, string housename, string owner, int locked, int chatenabled)
         {
             List<SqlValue> values = new List<SqlValue>();
-            values.Add(new SqlValue("Name", "'" + housename + "'"));
+            values.Add(new SqlValue("Name", "'" + housename.Replace("'", "''") + "'"));
             values.Add(new SqlValue("TopX", tx));
             values.Add(new SqlValue("TopY", ty));
             values.Add(new SqlValue("BottomX", width));
@@ -65,11 +65,13 @@ namespace HousingDistricts
                 if(count != house.Owners.Count)
                     sb.Append(",");
             }
+            sb.Replace("'", "''");
+
             List<SqlValue> values = new List<SqlValue>();
             values.Add(new SqlValue("Owners", "'" + sb.ToString() + "'"));
 
             List<SqlValue> wheres = new List<SqlValue>();
-            wheres.Add(new SqlValue("Name", "'" + houseName + "'"));
+            wheres.Add(new SqlValue("Name", "'" + houseName.Replace("'", "''") + "'"));
 
             HousingDistricts.SQLEditor.UpdateValues("HousingDistrict", values, wheres);
             return true;
@@ -86,11 +88,13 @@ namespace HousingDistricts
                 if (count != house.Visitors.Count)
                     sb.Append(",");
             }
+            sb.Replace("'", "''");
+
             List<SqlValue> values = new List<SqlValue>();
             values.Add(new SqlValue("Visitors", "'" + sb.ToString() + "'"));
 
             List<SqlValue> wheres = new List<SqlValue>();
-            wheres.Add(new SqlValue("Name", "'" + house.Name + "'"));
+            wheres.Add(new SqlValue("Name", "'" + house.Name.Replace("'", "''") + "'"));
 
             HousingDistricts.SQLEditor.UpdateValues("HousingDistrict", values, wheres);
             return true;
@@ -103,7 +107,7 @@ namespace HousingDistricts
             values.Add(new SqlValue("ChatEnabled", "'" + house.ChatEnabled.ToString() + "'"));
 
             List<SqlValue> wheres = new List<SqlValue>();
-            wheres.Add(new SqlValue("Name", "'" + house.Name + "'"));
+            wheres.Add(new SqlValue("Name", "'" + house.Name.Replace("'", "''") + "'"));
 
             HousingDistricts.SQLEditor.UpdateValues("HousingDistrict", values, wheres);
             return true;
@@ -131,34 +135,28 @@ namespace HousingDistricts
             {
                 var house = GetHouseByName(housename);
                 var houseName = house.Name;
-                var houseOwners = house.Owners;
-                var houseWorldID = house.WorldID;
-                var houseID = house.ID;
-                var houseLocked = house.Locked;
-                var houseChatEnabled = house.ChatEnabled;
-                var houseVisitors = house.Visitors;
-                HousingDistricts.Houses.Remove(house);
-                HousingDistricts.Houses.Add(new House(new Rectangle(tx, ty, width, height), houseOwners, houseID, houseName, Main.worldID.ToString(), houseLocked, houseChatEnabled, houseVisitors));
-                List<SqlValue> wheres = new List<SqlValue>();
-                wheres.Add(new SqlValue("Name", "'" + houseName + "'"));
-                wheres.Add(new SqlValue("WorldID", "'" + Main.worldID.ToString() + "'"));
-                //So, UpdateValues only allows 1 value at a time. I don't know how else to do what follows.
-                List<SqlValue> values = new List<SqlValue>();
-                values.Add(new SqlValue("TopX", tx));
-                HousingDistricts.SQLEditor.UpdateValues("HousingDistrict", values, wheres);
-                values.Clear();
-                values.Add(new SqlValue("TopY", ty));
-                HousingDistricts.SQLEditor.UpdateValues("HousingDistrict", values, wheres);
-                values.Clear();
-                values.Add(new SqlValue("BottomX", width));
-                HousingDistricts.SQLEditor.UpdateValues("HousingDistrict", values, wheres);
-                values.Clear();
-                values.Add(new SqlValue("BottomY", height));
-                HousingDistricts.SQLEditor.UpdateValues("HousingDistrict", values, wheres);
+
+                HousingDistricts.SQLEditor.UpdateValues(
+                    "HousingDistrict", 
+                    new List<SqlValue> {
+                        new SqlValue("TopX", tx),
+                        new SqlValue("TopY", ty),
+                        new SqlValue("BottomX", width),
+                        new SqlValue("BottomY", height),
+                    }, 
+                    new List<SqlValue> {
+                      /* Note: TShock generates an invalid sql expression when multiple wheres are used. */
+                        new SqlValue("Name", "'" + houseName.Replace("'", "''") + "'"),
+                    }
+                );
+
+                house.HouseArea = new Rectangle(tx, ty, width, height);
+
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Log.Error("Error on redefining house: \n" + ex);
                 return false;
             }
         }
