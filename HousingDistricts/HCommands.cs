@@ -13,6 +13,7 @@ namespace HousingDistricts
     {
         public static void House(CommandArgs args)
         {
+            string AdminHouse = "house.admin";
             string cmd = "help";
             if (args.Parameters.Count > 0)
             {
@@ -65,7 +66,7 @@ namespace HousingDistricts
 
                                 }
                             }
-                            if (userOwnedHouses.Count < HousingDistricts.HConfig.MaxHousesByUsername || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (userOwnedHouses.Count < HousingDistricts.HConfig.MaxHousesByUsername || args.Player.Group.HasPermission("house.bypasscount"))
                             {
                                 if (!args.Player.TempPoints.Any(p => p == Point.Zero))
                                 {
@@ -75,7 +76,7 @@ namespace HousingDistricts
                                     var y = Math.Min(args.Player.TempPoints[0].Y, args.Player.TempPoints[1].Y);
                                     var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X) + 1;
                                     var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y) + 1;
-                                    if (((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight) || args.Player.Group.HasPermission("bypasshsize"))
+                                    if (((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight) || args.Player.Group.HasPermission("house.bypasssize"))
                                     {
                                         Rectangle newHouseR = new Rectangle(x, y, width, height);
                                         foreach (House house in HousingDistricts.Houses)
@@ -145,7 +146,7 @@ namespace HousingDistricts
                             User playerID;
                             var house = HouseTools.GetHouseByName(String.Join(" ", args.Parameters.GetRange(2, args.Parameters.Count - 2)));
                             string houseName = house.Name;
-                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission(AdminHouse))
                             {
                                 if ((playerID = TShock.Users.GetUserByName(playerName)) != null)
                                 {
@@ -176,7 +177,7 @@ namespace HousingDistricts
                         {
                             string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
                             var house = HouseTools.GetHouseByName(houseName);
-                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission(AdminHouse))
                             {
                                 List<SqlValue> where = new List<SqlValue>();
                                 where.Add(new SqlValue("Name", "'" + houseName.Replace("'", "''") + "'"));
@@ -278,7 +279,7 @@ namespace HousingDistricts
                             if (!args.Player.TempPoints.Any(p => p == Point.Zero))
                             {
                                 string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
-                                if (HTools.OwnsHouse(args.Player.UserID.ToString(), houseName) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name.ToLower() == "superadmin")
+                                if (HTools.OwnsHouse(args.Player.UserID.ToString(), houseName) || args.Player.Group.HasPermission(AdminHouse))
                                 {
                                     var x = Math.Min(args.Player.TempPoints[0].X, args.Player.TempPoints[1].X);
                                     var y = Math.Min(args.Player.TempPoints[0].Y, args.Player.TempPoints[1].Y);
@@ -423,7 +424,7 @@ namespace HousingDistricts
                             User playerID;
                             var house = HouseTools.GetHouseByName(args.Parameters[2]);
                             string houseName = house.Name;
-                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission(AdminHouse))
                             {
                                 if ((playerID = TShock.Users.GetUserByName(playerName)) != null)
                                 {
@@ -460,7 +461,7 @@ namespace HousingDistricts
             }
         }
 
-        public static void TellAll(CommandArgs args)
+        public static void TellAll(CommandArgs args) // This should be edited
         {
             if (args.Parameters.Count > 0)
             {

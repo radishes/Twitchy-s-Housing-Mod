@@ -69,7 +69,7 @@ namespace HousingDistricts
             : base(game)
         {
             HConfig = new HConfigFile();
-            Order = -1;
+            Order = -5; // Should be reconsidered, perhaps this should be set by config or something
         }
         public void OnInitialize()
         {
@@ -86,25 +86,25 @@ namespace HousingDistricts
             {
                 if (group.Name != "superadmin")
                 {
-                    if (group.HasPermission("sethouse"))
+                    if (group.HasPermission("house.set"))
                         sethouse = true;
-                    if (group.HasPermission("edithouse"))
+                    if (group.HasPermission("house.edit"))
                         edithouse = true;
-                    if (group.HasPermission("enterlocked"))
+                    if (group.HasPermission("house.enterlocked"))
                         enterlocked = true;
-                    if (group.HasPermission("adminhouse"))
+                    if (group.HasPermission("house.admin"))
                         adminhouse = true;
                 }
             }
             List<string> perm = new List<string>();
             if (!sethouse)
-                perm.Add("sethouse");
+                perm.Add("house.set");
             if (!edithouse)
-                perm.Add("edithouse");
+                perm.Add("house.edit");
             if (!enterlocked)
-                perm.Add("enterlocked");
+                perm.Add("house.enterlocked");
             if (!adminhouse)
-                perm.Add("adminhouse");
+                perm.Add("house.admin");
             TShock.Groups.AddPermissions("trustedadmin", perm);
 
             var table = new SqlTable("HousingDistrict",
@@ -142,11 +142,11 @@ namespace HousingDistricts
             #endregion
 
             #region Commands
-            Commands.ChatCommands.Add(new Command("sethouse", HCommands.House, "house"));
-            Commands.ChatCommands.Add(new Command("superadmin", HCommands.Convert, "converthouse"));
-            Commands.ChatCommands.Add(new Command("lockhouse", HCommands.ChangeLock, "changelock"));
+            Commands.ChatCommands.Add(new Command("house.use", HCommands.House, "house"));
+            Commands.ChatCommands.Add(new Command("house.root", HCommands.Convert, "converthouse"));
+            Commands.ChatCommands.Add(new Command("house.lock", HCommands.ChangeLock, "changelock"));
             Commands.ChatCommands.Add(new Command(HCommands.TellAll, "all"));
-            Commands.ChatCommands.Add(new Command("superadmin", HCommands.HouseReload, "housereload"));
+            Commands.ChatCommands.Add(new Command("house.root", HCommands.HouseReload, "housereload"));
             #endregion
         }
 
@@ -176,7 +176,7 @@ namespace HousingDistricts
                                     {
                                         if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
                                         {
-                                            if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("enterlocked"))
+                                            if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("house.enterlocked"))
                                             {
                                                 if (!HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house) || !HTools.CanVisitHouse(player.TSPlayer.UserID.ToString(), house))
                                                 {
