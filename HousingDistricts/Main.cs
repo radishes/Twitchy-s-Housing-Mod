@@ -69,7 +69,9 @@ namespace HousingDistricts
             : base(game)
         {
             HConfig = new HConfigFile();
-            Order = -5; // Should be reconsidered, perhaps this should be set by config or something
+            Order = -5;
+            // Going to keep this at -5. Changed from -1 as it didn't give any chance for chat plugins to load after it, thus breaking House Chat feature.
+            // Also added e.Hadled check in Chat hook. Perhaps Order should be set by config, for more flexibility.
         }
         public void OnInitialize()
         {
