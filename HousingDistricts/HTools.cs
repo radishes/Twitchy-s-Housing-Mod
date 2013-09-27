@@ -38,7 +38,7 @@ namespace HousingDistricts
             {
                 if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)))
                 {
-                    player.TSPlayer.SendMessage("<House> <" + playername + ">: " + text, Color.Purple);
+                    player.TSPlayer.SendMessage("<House> <" + playername + ">: " + text, Color.LightSkyBlue);
                 }
             }
         }
@@ -59,27 +59,9 @@ namespace HousingDistricts
 
         public static void BroadcastToHouseOwners(string housename, string text)
         {
-            foreach (House house in HousingDistricts.Houses)
-            {
-                if (house.Name == housename)
-                {
-                    foreach (string ID in house.Owners)
-                    {
-                        foreach (TSPlayer player in TShock.Players)
-                        {
-                            if (player != null)
-                            {
-                                if (player.UserID.ToString() == ID)
-                                {
-                                    player.SendMessage(text, Color.MediumPurple);
-                                }
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
+            BroadcastToHouseOwners(HouseTools.GetHouseByName(housename), text);
         }
+
         public static void BroadcastToHouseOwners(House house, string text)
         {
             foreach (string ID in house.Owners)
@@ -90,7 +72,7 @@ namespace HousingDistricts
                     {
                         if (player.UserID.ToString() == ID)
                         {
-                            player.SendMessage(text, Color.MediumPurple);
+                            player.SendMessage(text, Color.LightSeaGreen);
                         }
                     }
                 }
@@ -101,24 +83,9 @@ namespace HousingDistricts
 
         public static bool OwnsHouse(string UserID, string housename)
         {
-            try
-            {
-                var house = HouseTools.GetHouseByName(housename);
-                foreach (string owner in house.Owners)
-                {
-                    if (owner == UserID)
-                        return true;
-                }
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex.ToString());
-                return false;
-            }
-
+            return OwnsHouse(UserID, HouseTools.GetHouseByName(housename));
         }
-        //kinda stupid to pass the house name when the calling method usually has the house object...
+
         public static bool OwnsHouse(string UserID, House house)
         {
             try
@@ -136,6 +103,7 @@ namespace HousingDistricts
                 return false;
             }
         }
+
         public static bool CanVisitHouse(string UserID, House house)
         {
             foreach (string visitor in house.Visitors)
