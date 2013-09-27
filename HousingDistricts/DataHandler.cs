@@ -211,7 +211,15 @@ namespace HousingDistricts
             {
                 args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].X = x;
                 args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].Y = y;
-                args.Player.SendMessage("Set Temp Vector2 " + args.Player.AwaitingTempPoint, Color.Yellow);
+                if (args.Player.AwaitingTempPoint == 1)
+                {
+                    args.Player.SendMessage("Top-left corner of protection area has been set!", Color.Yellow);
+                }
+                if (args.Player.AwaitingTempPoint == 2)
+                {
+                    args.Player.SendMessage("Bottom-right corner of protection area has been set!", Color.Yellow);
+                }
+
                 args.Player.SendTileSquare(x, y);
                 args.Player.AwaitingTempPoint = 0;
                 return true;
