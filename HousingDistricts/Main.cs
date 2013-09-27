@@ -81,6 +81,9 @@ namespace HousingDistricts
             bool edithouse = false;
             bool enterlocked = false;
             bool adminhouse = false;
+            bool bypasssize = false;
+            bool bypasscount = false;
+            bool hlock = false;
 
             foreach (Group group in TShock.Groups.groups)
             {
@@ -94,6 +97,12 @@ namespace HousingDistricts
                         enterlocked = true;
                     if (group.HasPermission("house.admin"))
                         adminhouse = true;
+                    if (group.HasPermission("house.bypasscount"))
+                        bypasscount = true;
+                    if (group.HasPermission("house.bypasssize"))
+                        bypasssize = true;
+                    if (group.HasPermission("house.lock"))
+                        hlock = true;
                 }
             }
             List<string> perm = new List<string>();
@@ -105,6 +114,12 @@ namespace HousingDistricts
                 perm.Add("house.enterlocked");
             if (!adminhouse)
                 perm.Add("house.admin");
+            if (!bypasscount)
+                perm.Add("house.bypasscount");
+            if (!bypasssize)
+                perm.Add("house.bypasssize");
+            if (!hlock)
+                perm.Add("house.lock");
             TShock.Groups.AddPermissions("trustedadmin", perm);
 
             var table = new SqlTable("HousingDistrict",
