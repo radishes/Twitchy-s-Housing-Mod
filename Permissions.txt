@@ -1,8 +1,0 @@
-house.admin - Bypass ownership checks
-house.bypasscount - Bypass house count checks (nice to give to Moderators, VIPs)
-house.bypasssize - Bypass size checks (for Moderator / VIP / Builder ranks, for use instead or Regions)
-house.edit - For editing all houses (for Admins)
-house.use - Access to /house
-house.root - Access to reload and convert
-house.lock - Access to /changelock
-house.enterlocked - For entering locked houses (who uses those really?)
