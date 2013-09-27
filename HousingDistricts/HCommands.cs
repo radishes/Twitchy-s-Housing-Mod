@@ -75,7 +75,7 @@ namespace HousingDistricts
                                     var y = Math.Min(args.Player.TempPoints[0].Y, args.Player.TempPoints[1].Y);
                                     var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X) + 1;
                                     var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y) + 1;
-                                    if ((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight)
+                                    if (((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight) || args.Player.Group.HasPermission("bypasshsize"))
                                     {
                                         Rectangle newHouseR = new Rectangle(x, y, width, height);
                                         foreach (House house in HousingDistricts.Houses)
@@ -163,7 +163,7 @@ namespace HousingDistricts
                             }
                             else
                             {
-                                args.Player.SendMessage("You do not own house: " + houseName);
+                                args.Player.SendMessage("You do not own house: " + houseName, Color.Lime);
                             }
                         }
                         else
@@ -351,8 +351,26 @@ namespace HousingDistricts
                         if (args.Parameters.Count > 1)
                         {
                             var house = HouseTools.GetHouseByName(args.Parameters[1]);
-                            args.Player.SendMessage("Chat enabled: " + house.ChatEnabled.ToString());
-                            args.Player.SendMessage("Owners: " + house.Owners.ToString());
+                            args.Player.SendMessage("Chat enabled: " + house.ChatEnabled.ToString(), Color.Lime);
+                            args.Player.SendMessage("Owners: " + String.Join(", ",house.Owners.ToArray()), Color.Lime);
+                        }
+                        break;
+                    }
+                case "owner":
+                    {
+                        if (args.Parameters.Count > 1)
+                        {
+                            var house = HouseTools.GetHouseByName(args.Parameters[1]);
+                            string OwnerNames = "";
+                            foreach (string ID in house.Owners)
+                            {
+                                OwnerNames = OwnerNames + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name;
+                            }
+                            args.Player.SendMessage(String.Format("House \"{0}\" owners: {1}", house.Name, OwnerNames), Color.Lime);
+                        }
+                        else
+                        {
+                            args.Player.SendMessage("Invalid syntax! Proper syntax: /house owner [house-name]", Color.Red);
                         }
                         break;
                     }
@@ -368,32 +386,32 @@ namespace HousingDistricts
                                     if (args.Parameters[2].ToLower() == "on")
                                     {
                                         HouseTools.ToggleChat(house, 1);
-                                        args.Player.SendMessage(house.Name + " chat is now enabled.");
+                                        args.Player.SendMessage(house.Name + " chat is now enabled.", Color.Lime);
                                     }
                                     else if (args.Parameters[2].ToLower() == "off")
                                     {
                                         HouseTools.ToggleChat(house, 0);
-                                        args.Player.SendMessage(house.Name + " chat is now disabled.");
+                                        args.Player.SendMessage(house.Name + " chat is now disabled.", Color.Lime);
                                     }
                                     else
                                     {
-                                        args.Player.SendMessage("Invalid syntax! Use /house chat <housename> (on|off)");
+                                        args.Player.SendMessage("Invalid syntax! Use /house chat <housename> (on|off)", Color.Lime);
                                     }
                                 }
                                 else
                                 {
                                     HouseTools.ToggleChat(house, (house.ChatEnabled == 0 ? 1 : 0));
-                                    args.Player.SendMessage(house.Name + " chat is now " + (house.ChatEnabled == 0 ? "disabled." : "enabled."));
+                                    args.Player.SendMessage(house.Name + " chat is now " + (house.ChatEnabled == 0 ? "disabled." : "enabled."), Color.Lime);
                                 }
                             }
                             else
                             {
-                                args.Player.SendMessage("You do not own " + house.Name + ".");
+                                args.Player.SendMessage("You do not own " + house.Name + ".", Color.Lime);
                             }
                         }
                         else
                         {
-                            args.Player.SendMessage("Invalid syntax! Use /house chat <housename> (on|off)");
+                            args.Player.SendMessage("Invalid syntax! Use /house chat <housename> (on|off)", Color.Lime);
                         }
                         break;
                     }
@@ -423,7 +441,7 @@ namespace HousingDistricts
                             }
                             else
                             {
-                                args.Player.SendMessage("You do not own house: " + houseName);
+                                args.Player.SendMessage("You do not own house: " + houseName, Color.Lime);
                             }
                         }
                         else
@@ -436,7 +454,7 @@ namespace HousingDistricts
                         args.Player.SendMessage("/house set 1", Color.Red);
                         args.Player.SendMessage("/house set 2", Color.Red);
                         args.Player.SendMessage("/house add HouseName", Color.Red);
-                        args.Player.SendMessage("Other /house commands: list, allow, name, delete, clear", Color.Red);
+                        args.Player.SendMessage("Other /house commands: list, allow, name, delete, clear, owner", Color.Red);
                         break;
                     }
             }
@@ -512,7 +530,7 @@ namespace HousingDistricts
         {
             HTools.SetupConfig();
             Log.Info("House Reload Initiated");
-            args.Player.SendMessage("House Reload Initiated");
+            args.Player.SendMessage("House Reload Initiated", Color.Lime);
         }
     }
 }

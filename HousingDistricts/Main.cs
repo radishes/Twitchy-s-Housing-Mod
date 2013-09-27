@@ -28,7 +28,7 @@ namespace HousingDistricts
         }
         public override string Author
         {
-            get { return "By Twitchy, Dingo, radishes and CoderCow."; }
+            get { return "By Twitchy, Dingo, radishes, CoderCow and B4"; }
         }
         public override string Description
         {
@@ -36,7 +36,7 @@ namespace HousingDistricts
         }
         public override Version Version
         {
-            get { return new Version(1, 6, 5); }
+            get { return new Version(1, 6, 5, 5); }
         }
 
         public override void Initialize()
@@ -144,7 +144,7 @@ namespace HousingDistricts
             #region Commands
             Commands.ChatCommands.Add(new Command("sethouse", HCommands.House, "house"));
             Commands.ChatCommands.Add(new Command("superadmin", HCommands.Convert, "converthouse"));
-            Commands.ChatCommands.Add(new Command(HCommands.ChangeLock, "changelock"));
+            Commands.ChatCommands.Add(new Command("lockhouse", HCommands.ChangeLock, "changelock"));
             Commands.ChatCommands.Add(new Command(HCommands.TellAll, "all"));
             Commands.ChatCommands.Add(new Command("superadmin", HCommands.HouseReload, "housereload"));
             #endregion
@@ -248,18 +248,21 @@ namespace HousingDistricts
         }
         public void OnChat(messageBuffer msg, int ply, string text, HandledEventArgs e)
         {
-            if (HConfig.HouseChatEnabled)
+            if (!e.Handled)
             {
-                if (text[0] == '/')
-                    return;
-
-                var tsplr = TShock.Players[msg.whoAmI];
-                foreach (House house in HousingDistricts.Houses)
+                if (HConfig.HouseChatEnabled)
                 {
-                    if (house.WorldID == Main.worldID.ToString() && house.ChatEnabled == 1 && house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)))
+                    if (text[0] == '/')
+                        return;
+
+                    var tsplr = TShock.Players[msg.whoAmI];
+                    foreach (House house in HousingDistricts.Houses)
                     {
-                        HTools.BroadcastToHouse(house, text, tsplr.Name);
-                        e.Handled = true;
+                        if (house.WorldID == Main.worldID.ToString() && house.ChatEnabled == 1 && house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)))
+                        {
+                            HTools.BroadcastToHouse(house, text, tsplr.Name);
+                            e.Handled = true;
+                        }
                     }
                 }
             }
