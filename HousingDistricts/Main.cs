@@ -181,7 +181,7 @@ namespace HousingDistricts
                                                 if (!HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house) || !HTools.CanVisitHouse(player.TSPlayer.UserID.ToString(), house))
                                                 {
                                                     player.TSPlayer.Teleport((int)player.LastTilePos.X, (int)player.LastTilePos.Y + 3);
-                                                    player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.MediumPurple);
+                                                    player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.LightSeaGreen);
                                                 }
                                             }
                                             else
@@ -190,10 +190,10 @@ namespace HousingDistricts
                                                 {
                                                     NewCurHouses.Add(house.Name);
                                                     if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house.Name))
-                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseEntryString.Replace("$HOUSE_NAME", house.Name), Color.MediumPurple);
+                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
                                                     else
                                                     {
-                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME", house.Name), Color.MediumPurple);
+                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
                                                         HTools.BroadcastToHouseOwners(house.Name, HConfig.NotifyOnOtherEntryString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", house.Name));
                                                     }
                                                 }
@@ -228,10 +228,10 @@ namespace HousingDistricts
                                     if (!NewCurHouses.Contains(cHouse))
                                     {
                                         if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), cHouse))
-                                            player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseExitString.Replace("$HOUSE_NAME", cHouse), Color.MediumPurple);
+                                            player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
                                         else
                                         {
-                                            player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", cHouse), Color.MediumPurple);
+                                            player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
                                             HTools.BroadcastToHouseOwners(cHouse, HConfig.NotifyOnOtherExitString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", cHouse));
                                         }
                                         //NewCurHouses.Remove(cHouse);

@@ -353,8 +353,9 @@ namespace HousingDistricts
                         if (args.Parameters.Count > 1)
                         {
                             var house = HouseTools.GetHouseByName(args.Parameters[1]);
-                            ply.SendMessage("Chat enabled: " + house.ChatEnabled.ToString(), Color.Lime);
-                            ply.SendMessage("Owner IDs: " + String.Join(", ",house.Owners.ToArray()), Color.Lime);
+                            ply.SendMessage("House '" + house.Name + "':", Color.LawnGreen);
+                            ply.SendMessage("Chat enabled: " + house.ChatEnabled.ToString(), Color.LawnGreen);
+                            ply.SendMessage("Owner IDs: " + String.Join(", ",house.Owners.ToArray()), Color.LawnGreen);
                         }
                         break;
                     }
@@ -366,9 +367,10 @@ namespace HousingDistricts
                             string OwnerNames = "";
                             foreach (string ID in house.Owners)
                             {
-                                OwnerNames = OwnerNames + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name;
+                                if (OwnerNames == "") { OwnerNames = OwnerNames + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
+                                else { OwnerNames = OwnerNames + ", " + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
                             }
-                            ply.SendMessage(String.Format("House \"{0}\" owners: {1}", house.Name, OwnerNames), Color.Lime);
+                            ply.SendMessage(String.Format("House '{0}' owners: {1}", house.Name, OwnerNames), Color.Lime);
                         }
                         else
                         {
