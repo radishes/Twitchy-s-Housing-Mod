@@ -86,7 +86,7 @@ namespace HousingDistricts
             {
                 if (group.Name != "superadmin")
                 {
-                    if (group.HasPermission("house.set"))
+                    if (group.HasPermission("house.use"))
                         sethouse = true;
                     if (group.HasPermission("house.edit"))
                         edithouse = true;
@@ -98,7 +98,7 @@ namespace HousingDistricts
             }
             List<string> perm = new List<string>();
             if (!sethouse)
-                perm.Add("house.set");
+                perm.Add("house.use");
             if (!edithouse)
                 perm.Add("house.edit");
             if (!enterlocked)
