@@ -1,21 +1,4 @@
-﻿/*   
-TShock, a server mod for Terraria
-Copyright (C) 2011 The TShock Team
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -47,6 +30,7 @@ namespace HousingDistricts
     }
     public static class GetDataHandlers
     {
+        static string EditHouse = "house.edit";
         private static Dictionary<PacketTypes, GetDataHandlerDelegate> GetDataHandlerDelegates;
 
         public static void InitGetDataHandler()
@@ -83,7 +67,7 @@ namespace HousingDistricts
             int tilex = args.Data.ReadInt32();
             int tiley = args.Data.ReadInt32();
 
-            if (!args.Player.Group.HasPermission("edithouse"))
+            if (!args.Player.Group.HasPermission(EditHouse))
             {
                 lock (HousingDistricts.HPlayers)
                 {
@@ -151,7 +135,7 @@ namespace HousingDistricts
                 return true;
             }
 
-            if (!args.Player.Group.HasPermission("edithouse"))
+            if (!args.Player.Group.HasPermission(EditHouse))
             {
                 lock (HousingDistricts.HPlayers)
                 {
@@ -180,7 +164,7 @@ namespace HousingDistricts
             int tilex = Math.Abs(x);
             int tiley = Math.Abs(y);
 
-            if (!args.Player.Group.HasPermission("edithouse"))
+            if (!args.Player.Group.HasPermission(EditHouse))
             {
                 lock (HousingDistricts.HPlayers)
                 {
@@ -227,13 +211,21 @@ namespace HousingDistricts
             {
                 args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].X = x;
                 args.Player.TempPoints[args.Player.AwaitingTempPoint - 1].Y = y;
-                args.Player.SendMessage("Set Temp Vector2 " + args.Player.AwaitingTempPoint, Color.Yellow);
+                if (args.Player.AwaitingTempPoint == 1)
+                {
+                    args.Player.SendMessage("Top-left corner of protection area has been set!", Color.Yellow);
+                }
+                if (args.Player.AwaitingTempPoint == 2)
+                {
+                    args.Player.SendMessage("Bottom-right corner of protection area has been set!", Color.Yellow);
+                }
+
                 args.Player.SendTileSquare(x, y);
                 args.Player.AwaitingTempPoint = 0;
                 return true;
             }
 
-            if (!args.Player.Group.HasPermission("edithouse"))
+            if (!args.Player.Group.HasPermission(EditHouse))
             {
                 lock (HousingDistricts.HPlayers)
                 {

@@ -13,7 +13,9 @@ namespace HousingDistricts
     {
         public static void House(CommandArgs args)
         {
+            string AdminHouse = "house.admin"; // Seems right to keep the actual permision name in one place, for easy editing
             string cmd = "help";
+            var ply = args.Player; // Makes the code shorter
             if (args.Parameters.Count > 0)
             {
                 cmd = args.Parameters[0].ToLower();
@@ -24,7 +26,7 @@ namespace HousingDistricts
                 case "name":
                     {
                         {
-                            args.Player.SendMessage("Hit a block to get the name of the house", Color.Yellow);
+                            ply.SendMessage("Hit a block to get the name of the house", Color.Yellow);
                             player.AwaitingHouseName = true;
                         }
                         break;
@@ -37,14 +39,14 @@ namespace HousingDistricts
                             choice >= 1 && choice <= 2)
                         {
                             if (choice == 1)
-                                args.Player.SendMessage("Now hit the TOP-LEFT block of the area to be protected.", Color.Yellow);
+                                ply.SendMessage("Now hit the TOP-LEFT block of the area to be protected.", Color.Yellow);
                             if (choice == 2)
-                                args.Player.SendMessage("Now hit the BOTTOM-RIGHT block of the area to be protected.", Color.Yellow);
-                            args.Player.AwaitingTempPoint = choice;
+                                ply.SendMessage("Now hit the BOTTOM-RIGHT block of the area to be protected.", Color.Yellow);
+                            ply.AwaitingTempPoint = choice;
                         }
                         else
                         {
-                            args.Player.SendMessage("Invalid syntax! Proper syntax: /house set [1/2]", Color.Red);
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house set [1/2]");
                         }
                         break;
                     }
@@ -57,7 +59,7 @@ namespace HousingDistricts
                             {
                                 foreach (string owner in house.Owners)
                                 {
-                                    if (args.Player.UserID.ToString() == owner)
+                                    if (ply.UserID.ToString() == owner)
                                     {
                                         userOwnedHouses.Add(house.ID);
                                         break;
@@ -65,76 +67,76 @@ namespace HousingDistricts
 
                                 }
                             }
-                            if (userOwnedHouses.Count() < HousingDistricts.HConfig.MaxHousesByUsername || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (userOwnedHouses.Count < HousingDistricts.HConfig.MaxHousesByUsername || ply.Group.HasPermission("house.bypasscount"))
                             {
-                                if (!args.Player.TempPoints.Any(p => p == Point.Zero))
+                                if (!ply.TempPoints.Any(p => p == Point.Zero))
                                 {
                                     string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
 
-                                    var x = Math.Min(args.Player.TempPoints[0].X, args.Player.TempPoints[1].X);
-                                    var y = Math.Min(args.Player.TempPoints[0].Y, args.Player.TempPoints[1].Y);
-                                    var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X);
-                                    var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y);
-                                    if ((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight)
+                                    var x = Math.Min(ply.TempPoints[0].X, ply.TempPoints[1].X);
+                                    var y = Math.Min(ply.TempPoints[0].Y, ply.TempPoints[1].Y);
+                                    var width = Math.Abs(ply.TempPoints[0].X - ply.TempPoints[1].X) + 1;
+                                    var height = Math.Abs(ply.TempPoints[0].Y - ply.TempPoints[1].Y) + 1;
+                                    if (((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight) || ply.Group.HasPermission("house.bypasssize"))
                                     {
                                         Rectangle newHouseR = new Rectangle(x, y, width, height);
                                         foreach (House house in HousingDistricts.Houses)
                                         {
-                                            if ((newHouseR.Intersects(house.HouseArea) && !userOwnedHouses.Contains(house.ID)) && !HousingDistricts.HConfig.OverlapHouses)
+                                            if (house.WorldID == Main.worldID.ToString() && (newHouseR.Intersects(house.HouseArea) && !userOwnedHouses.Contains(house.ID)) && !HousingDistricts.HConfig.OverlapHouses)
                                             { // user is allowed to intersect their own house
-                                                args.Player.SendMessage("Your selected area overlaps another players' house, which is not allowed.", Color.Red);
+                                                ply.SendErrorMessage("Your selected area overlaps another players' house, which is not allowed.");
                                                 return;
                                             }
                                         }
-                                        if (HouseTools.AddHouse(x, y, width, height, houseName, args.Player.UserID.ToString(), 0, 0))
+                                        if (HouseTools.AddHouse(x, y, width, height, houseName, ply.UserID.ToString(), 0, 0))
                                         {
-                                            args.Player.TempPoints[0] = Point.Zero;
-                                            args.Player.TempPoints[1] = Point.Zero;
-                                            args.Player.SendMessage("You have created new house " + houseName, Color.Yellow);
-                                            HouseTools.AddNewUser(houseName, args.Player.UserID.ToString());
+                                            ply.TempPoints[0] = Point.Zero;
+                                            ply.TempPoints[1] = Point.Zero;
+                                            ply.SendMessage("You have created new house " + houseName, Color.Yellow);
+                                            HouseTools.AddNewUser(houseName, ply.UserID.ToString());
                                         }
                                         else
                                         {
-                                            args.Player.SendMessage("House " + houseName + " already exists", Color.Red);
+                                            ply.SendErrorMessage("House " + houseName + " already exists");
                                         }
                                     }
                                     else
                                     {
                                         if ((width * height) >= HousingDistricts.HConfig.MaxHouseSize)
                                         {
-                                            args.Player.SendMessage("Your house exceeds the maximum size of " + HousingDistricts.HConfig.MaxHouseSize.ToString() + "blocks.", Color.Yellow);
-                                            args.Player.SendMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.", Color.Yellow);
-                                            args.Player.TempPoints[0] = Point.Zero;
-                                            args.Player.TempPoints[1] = Point.Zero;
+                                            ply.SendErrorMessage("Your house exceeds the maximum size of " + HousingDistricts.HConfig.MaxHouseSize.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
+                                            ply.TempPoints[0] = Point.Zero;
+                                            ply.TempPoints[1] = Point.Zero;
                                         }
                                         else if (width < HousingDistricts.HConfig.MinHouseWidth)
                                         {
-                                            args.Player.SendMessage("Your house width is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseWidth.ToString() + "blocks.", Color.Yellow);
-                                            args.Player.SendMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.", Color.Yellow);
-                                            args.Player.TempPoints[0] = Point.Zero;
-                                            args.Player.TempPoints[1] = Point.Zero;
+                                            ply.SendErrorMessage("Your house width is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseWidth.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
+                                            ply.TempPoints[0] = Point.Zero;
+                                            ply.TempPoints[1] = Point.Zero;
                                         }
                                         else
                                         {
-                                            args.Player.SendMessage("Your house height is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseHeight.ToString() + "blocks.", Color.Yellow);
-                                            args.Player.SendMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.", Color.Yellow);
-                                            args.Player.TempPoints[0] = Point.Zero;
-                                            args.Player.TempPoints[1] = Point.Zero;
+                                            ply.SendErrorMessage("Your house height is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseHeight.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
+                                            ply.TempPoints[0] = Point.Zero;
+                                            ply.TempPoints[1] = Point.Zero;
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    args.Player.SendMessage("Points not set up yet", Color.Red);
+                                    ply.SendErrorMessage("Points not set up yet");
                                 }
                             }
                             else
                             {
-                                args.Player.SendMessage("House add failed: You have too many houses!", Color.Red);
+                                ply.SendErrorMessage("House add failed: You have too many houses!");
                             }
                         }
                         else
-                            args.Player.SendMessage("Invalid syntax! Proper syntax: /house add [name]", Color.Red);
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house add [name]");
                         break;
                     }
                 case "allow":
@@ -143,64 +145,64 @@ namespace HousingDistricts
                         {
                             string playerName = args.Parameters[1];
                             User playerID;
-                            var house = HouseTools.GetHouseByName(args.Parameters[2]);
+                            var house = HouseTools.GetHouseByName(String.Join(" ", args.Parameters.GetRange(2, args.Parameters.Count - 2)));
                             string houseName = house.Name;
-                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (HTools.OwnsHouse(ply.UserID.ToString(), house.Name) || ply.Group.HasPermission(AdminHouse))
                             {
                                 if ((playerID = TShock.Users.GetUserByName(playerName)) != null)
                                 {
                                     if (HouseTools.AddNewUser(houseName, playerID.ID.ToString()))
                                     {
-                                        args.Player.SendMessage("Added user " + playerName + " to " + houseName, Color.Yellow);
+                                        ply.SendMessage("Added user " + playerName + " to " + houseName, Color.Yellow);
                                     }
                                     else
-                                        args.Player.SendMessage("House " + houseName + " not found", Color.Red);
+                                        ply.SendErrorMessage("House " + houseName + " not found");
                                 }
                                 else
                                 {
-                                    args.Player.SendMessage("Player " + playerName + " not found", Color.Red);
+                                    ply.SendErrorMessage("Player " + playerName + " not found");
                                 }
                             }
                             else
                             {
-                                args.Player.SendMessage("You do not own house: " + houseName);
+                                ply.SendErrorMessage("You do not own house: " + houseName);
                             }
                         }
                         else
-                            args.Player.SendMessage("Invalid syntax! Proper syntax: /house allow [name] [house]", Color.Red);
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house allow [name] [house]");
                         break;
                     }
                 case "delete":
                     {
                         if (args.Parameters.Count > 1)
                         {
-                            string houseName = args.Parameters[1];
+                            string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
                             var house = HouseTools.GetHouseByName(houseName);
-                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (HTools.OwnsHouse(ply.UserID.ToString(), house.Name) || ply.Group.HasPermission(AdminHouse))
                             {
                                 List<SqlValue> where = new List<SqlValue>();
-                                where.Add(new SqlValue("Name", "'" + houseName + "'"));
+                                where.Add(new SqlValue("Name", "'" + houseName.Replace("'", "''") + "'"));
                                 HousingDistricts.SQLWriter.DeleteRow("HousingDistrict", where);
                                 HousingDistricts.Houses.Remove(house);
-                                args.Player.SendMessage("House: " + houseName + " deleted", Color.Yellow);
+                                ply.SendMessage("House: " + houseName + " deleted", Color.Yellow);
                                 break;
                             }
                             else
                             {
-                                args.Player.SendMessage("You do not own house: " + houseName, Color.Yellow);
+                                ply.SendErrorMessage("You do not own house: " + houseName);
                                 break;
                             }
                         }
                         else
-                            args.Player.SendMessage("Invalid syntax! Proper syntax: /house delete [house]", Color.Red);
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house delete [house]");
                         break;
                     }
                 case "clear":
                     {
-                        args.Player.TempPoints[0] = Point.Zero;
-                        args.Player.TempPoints[1] = Point.Zero;
-                        args.Player.AwaitingTempPoint = 0;
-                        args.Player.SendMessage("Cleared temp area", Color.Yellow);
+                        ply.TempPoints[0] = Point.Zero;
+                        ply.TempPoints[1] = Point.Zero;
+                        ply.AwaitingTempPoint = 0;
+                        ply.SendMessage("Cleared temp area", Color.Yellow);
                         break;
                     }
                 case "list":
@@ -217,7 +219,7 @@ namespace HousingDistricts
                         {
                             if (!int.TryParse(args.Parameters[1], out page) || page < 1)
                             {
-                                args.Player.SendMessage(string.Format("Invalid page number ({0})", page), Color.Red);
+                                ply.SendErrorMessage(string.Format("Invalid page number ({0})", page));
                                 return;
                             }
                             page--; //Substract 1 as pages are parsed starting at 1 and not 0
@@ -236,7 +238,7 @@ namespace HousingDistricts
                         // Are there even any houses to display?
                         if (houses.Count == 0)
                         {
-                            args.Player.SendMessage("There are currently no houses defined.", Color.Red);
+                            ply.SendErrorMessage("There are currently no houses defined.");
                             return;
                         }
 
@@ -244,12 +246,12 @@ namespace HousingDistricts
                         int pagecount = houses.Count / pagelimit;
                         if (page > pagecount)
                         {
-                            args.Player.SendMessage(string.Format("Page number exceeds pages ({0}/{1})", page + 1, pagecount + 1), Color.Red);
+                            ply.SendErrorMessage(string.Format("Page number exceeds pages ({0}/{1})", page + 1, pagecount + 1));
                             return;
                         }
 
                         //Display the current page and the number of pages.
-                        args.Player.SendMessage(string.Format("Current Houses ({0}/{1}):", page + 1, pagecount + 1), Color.Green);
+                        ply.SendMessage(string.Format("Current Houses ({0}/{1}):", page + 1, pagecount + 1), Color.Green);
 
                         //Add up to pagelimit names to a list
                         var nameslist = new List<string>();
@@ -262,12 +264,12 @@ namespace HousingDistricts
                         var names = nameslist.ToArray();
                         for (int i = 0; i < names.Length; i += perline)
                         {
-                            args.Player.SendMessage(string.Join(", ", names, i, Math.Min(names.Length - i, perline)), Color.Yellow);
+                            ply.SendMessage(string.Join(", ", names, i, Math.Min(names.Length - i, perline)), Color.Yellow);
                         }
 
                         if (page < pagecount)
                         {
-                            args.Player.SendMessage(string.Format("Type /house list {0} for more houses.", (page + 2)), Color.Yellow);
+                            ply.SendMessage(string.Format("Type /house list {0} for more houses.", (page + 2)), Color.Yellow);
                         }
                         break;
                     }
@@ -275,48 +277,104 @@ namespace HousingDistricts
                     {
                         if (args.Parameters.Count > 1)
                         {
-                            if (!args.Player.TempPoints.Any(p => p == Point.Zero))
+                            if (!ply.TempPoints.Any(p => p == Point.Zero))
                             {
                                 string houseName = String.Join(" ", args.Parameters.GetRange(1, args.Parameters.Count - 1));
-                                if (HTools.OwnsHouse(args.Player.UserID.ToString(), houseName) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name.ToLower() == "superadmin")
+                                if (HTools.OwnsHouse(ply.UserID.ToString(), houseName) || ply.Group.HasPermission(AdminHouse))
                                 {
-                                    var x = Math.Min(args.Player.TempPoints[0].X, args.Player.TempPoints[1].X);
-                                    var y = Math.Min(args.Player.TempPoints[0].Y, args.Player.TempPoints[1].Y);
-                                    var width = Math.Abs(args.Player.TempPoints[0].X - args.Player.TempPoints[1].X);
-                                    var height = Math.Abs(args.Player.TempPoints[0].Y - args.Player.TempPoints[1].Y);
+                                    var x = Math.Min(ply.TempPoints[0].X, ply.TempPoints[1].X);
+                                    var y = Math.Min(ply.TempPoints[0].Y, ply.TempPoints[1].Y);
+                                    var width = Math.Abs(ply.TempPoints[0].X - ply.TempPoints[1].X) + 1;
+                                    var height = Math.Abs(ply.TempPoints[0].Y - ply.TempPoints[1].Y) + 1;
 
-                                    if (HouseTools.RedefineHouse(x, y, width, height, houseName))
+                                    if ((width * height) <= HousingDistricts.HConfig.MaxHouseSize && width >= HousingDistricts.HConfig.MinHouseWidth && height >= HousingDistricts.HConfig.MinHouseHeight)
                                     {
-                                        args.Player.TempPoints[0] = Point.Zero;
-                                        args.Player.TempPoints[1] = Point.Zero;
-                                        args.Player.SendMessage("Redefined house " + houseName, Color.Yellow);
+                                        Rectangle newHouseR = new Rectangle(x, y, width, height);
+                                        foreach (House house in HousingDistricts.Houses)
+                                        {
+                                            if (house.WorldID == Main.worldID.ToString() && (newHouseR.Intersects(house.HouseArea) && !house.Owners.Contains(ply.UserID.ToString())) && !HousingDistricts.HConfig.OverlapHouses)
+                                            { // user is allowed to intersect their own house
+                                                ply.SendErrorMessage("Your selected area overlaps another players' house, which is not allowed.");
+                                                return;
+                                            }
+                                        }
+                                        if (HouseTools.RedefineHouse(x, y, width, height, houseName))
+                                        {
+                                            ply.TempPoints[0] = Point.Zero;
+                                            ply.TempPoints[1] = Point.Zero;
+                                            ply.SendMessage("Redefined house " + houseName, Color.Yellow);
+                                        }
+                                        else
+                                        {
+                                            ply.SendErrorMessage("Error redefining house " + houseName);
+                                        }
                                     }
                                     else
                                     {
-                                        args.Player.SendMessage("Error redefining house " + houseName, Color.Red);
+                                        if ((width * height) >= HousingDistricts.HConfig.MaxHouseSize)
+                                        {
+                                            ply.SendErrorMessage("Your house exceeds the maximum size of " + HousingDistricts.HConfig.MaxHouseSize.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
+                                            ply.TempPoints[0] = Point.Zero;
+                                            ply.TempPoints[1] = Point.Zero;
+                                        }
+                                        else if (width < HousingDistricts.HConfig.MinHouseWidth)
+                                        {
+                                            ply.SendErrorMessage("Your house width is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseWidth.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
+                                            ply.TempPoints[0] = Point.Zero;
+                                            ply.TempPoints[1] = Point.Zero;
+                                        }
+                                        else
+                                        {
+                                            ply.SendErrorMessage("Your house height is smaller than server minimum of " + HousingDistricts.HConfig.MinHouseHeight.ToString() + "blocks.");
+                                            ply.SendErrorMessage("Width: " + width.ToString() + ", Height: " + height.ToString() + ". Points have been cleared.");
+                                            ply.TempPoints[0] = Point.Zero;
+                                            ply.TempPoints[1] = Point.Zero;
+                                        }
                                     }
                                 }
                                 else
                                 {
-                                    args.Player.SendMessage("You do not own house: " + houseName, Color.Yellow);
+                                    ply.SendErrorMessage("You do not own house: " + houseName);
                                 }
                             }
                             else
                             {
-                                args.Player.SendMessage("Points not set up yet", Color.Red);
+                                ply.SendErrorMessage("Points not set up yet");
                             }
                         }
                         else
-                            args.Player.SendMessage("Invalid syntax! Proper syntax: /house redefine [name]", Color.Red);
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house redefine [name]");
                         break;
                     }
                 case "debug":
-                    { //this is just here to pass me whatever info i need for a test
+                    { // This is just here for... I have no idea really :)
                         if (args.Parameters.Count > 1)
                         {
                             var house = HouseTools.GetHouseByName(args.Parameters[1]);
-                            args.Player.SendMessage("Chat enabled: " + house.ChatEnabled.ToString());
-                            args.Player.SendMessage("Owners: " + house.Owners.ToString());
+                            ply.SendMessage("House '" + house.Name + "':", Color.LawnGreen);
+                            ply.SendMessage("Chat enabled: " + house.ChatEnabled.ToString(), Color.LawnGreen);
+                            ply.SendMessage("Owner IDs: " + String.Join(", ",house.Owners.ToArray()), Color.LawnGreen);
+                        }
+                        break;
+                    }
+                case "owner":
+                    {
+                        if (args.Parameters.Count > 1)
+                        {
+                            var house = HouseTools.GetHouseByName(args.Parameters[1]);
+                            string OwnerNames = "";
+                            foreach (string ID in house.Owners)
+                            {
+                                if (OwnerNames == "") { OwnerNames = OwnerNames + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
+                                else { OwnerNames = OwnerNames + ", " + TShock.Users.GetUserByID(System.Convert.ToInt32(ID)).Name; }
+                            }
+                            ply.SendMessage(String.Format("House '{0}' owners: {1}", house.Name, OwnerNames), Color.Lime);
+                        }
+                        else
+                        {
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house owner [house-name]");
                         }
                         break;
                     }
@@ -325,39 +383,39 @@ namespace HousingDistricts
                         if (args.Parameters.Count > 1)
                         {
                             var house = HouseTools.GetHouseByName(args.Parameters[1]);
-                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name))
+                            if (HTools.OwnsHouse(ply.UserID.ToString(), house.Name))
                             {
                                 if (args.Parameters.Count > 2)
                                 {
                                     if (args.Parameters[2].ToLower() == "on")
                                     {
                                         HouseTools.ToggleChat(house, 1);
-                                        args.Player.SendMessage(house.Name + " chat is now enabled.");
+                                        ply.SendMessage(house.Name + " chat is now enabled.", Color.Lime);
                                     }
                                     else if (args.Parameters[2].ToLower() == "off")
                                     {
                                         HouseTools.ToggleChat(house, 0);
-                                        args.Player.SendMessage(house.Name + " chat is now disabled.");
+                                        ply.SendMessage(house.Name + " chat is now disabled.", Color.Lime);
                                     }
                                     else
                                     {
-                                        args.Player.SendMessage("Invalid syntax! Use /house chat <housename> (on|off)");
+                                        ply.SendErrorMessage("Invalid syntax! Use /house chat <housename> (on|off)");
                                     }
                                 }
                                 else
                                 {
                                     HouseTools.ToggleChat(house, (house.ChatEnabled == 0 ? 1 : 0));
-                                    args.Player.SendMessage(house.Name + " chat is now " + (house.ChatEnabled == 0 ? "disabled." : "enabled."));
+                                    ply.SendMessage(house.Name + " chat is now " + (house.ChatEnabled == 0 ? "disabled." : "enabled."), Color.Lime);
                                 }
                             }
                             else
                             {
-                                args.Player.SendMessage("You do not own " + house.Name + ".");
+                                ply.SendErrorMessage("You do not own " + house.Name + ".");
                             }
                         }
                         else
                         {
-                            args.Player.SendMessage("Invalid syntax! Use /house chat <housename> (on|off)");
+                            ply.SendErrorMessage("Invalid syntax! Use /house chat <housename> (on|off)");
                         }
                         break;
                     }
@@ -369,38 +427,38 @@ namespace HousingDistricts
                             User playerID;
                             var house = HouseTools.GetHouseByName(args.Parameters[2]);
                             string houseName = house.Name;
-                            if (HTools.OwnsHouse(args.Player.UserID.ToString(), house.Name) || args.Player.Group.HasPermission("adminhouse") || args.Player.Group.Name == "superadmin")
+                            if (HTools.OwnsHouse(ply.UserID.ToString(), house.Name) || ply.Group.HasPermission(AdminHouse))
                             {
                                 if ((playerID = TShock.Users.GetUserByName(playerName)) != null)
                                 {
                                     if (HouseTools.AddNewVisitor(house, playerID.ID.ToString()))
                                     {
-                                        args.Player.SendMessage("Added user " + playerName + " to " + houseName + "as a visitor.", Color.Yellow);
+                                        ply.SendMessage("Added user " + playerName + " to " + houseName + "as a visitor.", Color.Yellow);
                                     }
                                     else
-                                        args.Player.SendMessage("House " + houseName + " not found", Color.Red);
+                                        ply.SendErrorMessage("House " + houseName + " not found");
                                 }
                                 else
                                 {
-                                    args.Player.SendMessage("Player " + playerName + " not found", Color.Red);
+                                    ply.SendErrorMessage("Player " + playerName + " not found");
                                 }
                             }
                             else
                             {
-                                args.Player.SendMessage("You do not own house: " + houseName);
+                                ply.SendErrorMessage("You do not own house: " + houseName);
                             }
                         }
                         else
-                            args.Player.SendMessage("Invalid syntax! Proper syntax: /house addvisitor [name] [house]", Color.Red);
+                            ply.SendErrorMessage("Invalid syntax! Proper syntax: /house addvisitor [name] [house]");
                         break;
                     }
                 default:
                     {
-                        args.Player.SendMessage("To create a house, use these commands:", Color.Red);
-                        args.Player.SendMessage("/house set 1", Color.Red);
-                        args.Player.SendMessage("/house set 2", Color.Red);
-                        args.Player.SendMessage("/house add HouseName", Color.Red);
-                        args.Player.SendMessage("Other /house commands: list, allow, name, delete, clear", Color.Red);
+                        ply.SendMessage("To create a house, use these commands:", Color.Lime);
+                        ply.SendMessage("/house set 1", Color.Lime);
+                        ply.SendMessage("/house set 2", Color.Lime);
+                        ply.SendMessage("/house add HouseName", Color.Lime);
+                        ply.SendMessage("Other /house commands: list, allow, name, delete, clear, owner", Color.Lime);
                         break;
                     }
             }
@@ -408,26 +466,25 @@ namespace HousingDistricts
 
         public static void TellAll(CommandArgs args)
         {
-            if (args.Parameters.Count > 0)
+            if (args.Player != null)
             {
-                string text = "";
-                foreach (string word in args.Parameters)
+                var tsplr = args.Player;
+                if (args.Parameters.Count < 1)
                 {
-                    text = text + " " + word;
-                }
-
-            	Group super = new SuperAdminGroup();
-                if (args.Player.Group.HasPermission("adminchat") && !text.StartsWith("/"))
-                {
-					TShock.Utils.Broadcast(super.Prefix + "<" + args.Player.Name + ">" + text,
-                                    args.Player.Group.R, args.Player.Group.G,
-                                    args.Player.Group.B);
+                    tsplr.SendErrorMessage("Invalid syntax! Proper syntax: /all [message]");
                     return;
                 }
-
-                TShock.Utils.Broadcast("{2}<{0}>{1}".SFormat(args.Player.Name, text, true ? "[{0}] ".SFormat(args.Player.Group.Name) : ""),
-                                args.Player.Group.R, args.Player.Group.G,
-                                args.Player.Group.B);
+                string text = String.Join(" ", args.Parameters);
+                if (!tsplr.mute)
+                {
+                    TShock.Utils.Broadcast(
+                        String.Format(TShock.Config.ChatFormat, tsplr.Group.Name, tsplr.Group.Prefix, tsplr.Name, tsplr.Group.Suffix, text),
+                        tsplr.Group.R, tsplr.Group.G, tsplr.Group.B);
+                }
+                else
+                {
+                    tsplr.SendErrorMessage("You are muted!");
+                }
             }
         }
 
@@ -467,16 +524,17 @@ namespace HousingDistricts
                     args.Player.SendMessage("House: " + houseName + (locked ? " locked" : " unlocked"), Color.Yellow);
                 }
                 else
-                    args.Player.SendMessage("You do not own House: " + houseName, Color.Yellow);
+                    args.Player.SendErrorMessage("You do not own House: " + houseName);
             }
             else
-                args.Player.SendMessage("Invalid syntax! Proper syntax: /changelock [house]", Color.Red);
+                args.Player.SendErrorMessage("Invalid syntax! Proper syntax: /changelock [house]");
         }
+
         public static void HouseReload(CommandArgs args)
         {
             HTools.SetupConfig();
             Log.Info("House Reload Initiated");
-            args.Player.SendMessage("House Reload Initiated");
+            args.Player.SendMessage("House Reload Initiated", Color.Lime);
         }
     }
 }

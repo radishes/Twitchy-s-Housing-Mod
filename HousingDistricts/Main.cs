@@ -28,15 +28,15 @@ namespace HousingDistricts
         }
         public override string Author
         {
-            get { return "By Twitchy, Dingo, and radishes."; }
+            get { return "By Twitchy, Dingo, radishes, CoderCow and B4"; }
         }
         public override string Description
         {
-            get { return "Housing Districts 1.6.4"; }
+            get { return "Housing Districts 1.6.5"; }
         }
         public override Version Version
         {
-            get { return new Version(1, 6, 4); }
+            get { return new Version(1, 6, 5, 5); }
         }
 
         public override void Initialize()
@@ -69,7 +69,9 @@ namespace HousingDistricts
             : base(game)
         {
             HConfig = new HConfigFile();
-            Order = -1;
+            Order = -5;
+            // Going to keep this at -5. Changed from -1 as it didn't give any chance for chat plugins to load after it, thus breaking House Chat feature.
+            // Also added e.Handled check in Chat hook. Perhaps Order should be set by config, for more flexibility.
         }
         public void OnInitialize()
         {
@@ -81,30 +83,45 @@ namespace HousingDistricts
             bool edithouse = false;
             bool enterlocked = false;
             bool adminhouse = false;
+            bool bypasssize = false;
+            bool bypasscount = false;
+            bool hlock = false;
 
             foreach (Group group in TShock.Groups.groups)
             {
                 if (group.Name != "superadmin")
                 {
-                    if (group.HasPermission("sethouse"))
+                    if (group.HasPermission("house.use"))
                         sethouse = true;
-                    if (group.HasPermission("edithouse"))
+                    if (group.HasPermission("house.edit"))
                         edithouse = true;
-                    if (group.HasPermission("enterlocked"))
+                    if (group.HasPermission("house.enterlocked"))
                         enterlocked = true;
-                    if (group.HasPermission("adminhouse"))
+                    if (group.HasPermission("house.admin"))
                         adminhouse = true;
+                    if (group.HasPermission("house.bypasscount"))
+                        bypasscount = true;
+                    if (group.HasPermission("house.bypasssize"))
+                        bypasssize = true;
+                    if (group.HasPermission("house.lock"))
+                        hlock = true;
                 }
             }
             List<string> perm = new List<string>();
             if (!sethouse)
-                perm.Add("sethouse");
+                perm.Add("house.use");
             if (!edithouse)
-                perm.Add("edithouse");
+                perm.Add("house.edit");
             if (!enterlocked)
-                perm.Add("enterlocked");
+                perm.Add("house.enterlocked");
             if (!adminhouse)
-                perm.Add("adminhouse");
+                perm.Add("house.admin");
+            if (!bypasscount)
+                perm.Add("house.bypasscount");
+            if (!bypasssize)
+                perm.Add("house.bypasssize");
+            if (!hlock)
+                perm.Add("house.lock");
             TShock.Groups.AddPermissions("trustedadmin", perm);
 
             var table = new SqlTable("HousingDistrict",
@@ -142,15 +159,22 @@ namespace HousingDistricts
             #endregion
 
             #region Commands
-            Commands.ChatCommands.Add(new Command("sethouse", HCommands.House, "house"));
-            Commands.ChatCommands.Add(new Command("superadmin", HCommands.Convert, "converthouse"));
-            Commands.ChatCommands.Add(new Command(HCommands.ChangeLock, "changelock"));
+            Commands.ChatCommands.Add(new Command("house.use", HCommands.House, "house"));
+            Commands.ChatCommands.Add(new Command("house.root", HCommands.Convert, "converthouse"));
+            Commands.ChatCommands.Add(new Command("house.lock", HCommands.ChangeLock, "changelock"));
             Commands.ChatCommands.Add(new Command(HCommands.TellAll, "all"));
-            Commands.ChatCommands.Add(new Command("superadmin", HCommands.HouseReload, "housereload"));
+            Commands.ChatCommands.Add(new Command("house.root", HCommands.HouseReload, "housereload"));
             #endregion
         }
+
+        private DateTime PrevUpdateTime;
         public void OnUpdate()
         {
+            if (DateTime.Now < PrevUpdateTime + TimeSpan.FromMilliseconds(500))
+                return;
+            else
+              PrevUpdateTime = DateTime.Now;
+
             if (HConfig.NotifyOnEntry || HConfig.NotifyOnExit)
             {
                 lock (HPlayers)
@@ -169,12 +193,12 @@ namespace HousingDistricts
                                     {
                                         if (house.HouseArea.Intersects(new Rectangle(player.TSPlayer.TileX, player.TSPlayer.TileY, 1, 1)) && house.WorldID == Main.worldID.ToString())
                                         {
-                                            if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("enterlocked"))
+                                            if (house.Locked == 1 && !player.TSPlayer.Group.HasPermission("house.enterlocked"))
                                             {
                                                 if (!HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house) || !HTools.CanVisitHouse(player.TSPlayer.UserID.ToString(), house))
                                                 {
                                                     player.TSPlayer.Teleport((int)player.LastTilePos.X, (int)player.LastTilePos.Y + 3);
-                                                    player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.MediumPurple);
+                                                    player.TSPlayer.SendMessage("House: '" + house.Name + "' Is locked", Color.LightSeaGreen);
                                                 }
                                             }
                                             else
@@ -183,10 +207,10 @@ namespace HousingDistricts
                                                 {
                                                     NewCurHouses.Add(house.Name);
                                                     if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), house.Name))
-                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseEntryString.Replace("$HOUSE_NAME", house.Name), Color.MediumPurple);
+                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
                                                     else
                                                     {
-                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME", house.Name), Color.MediumPurple);
+                                                        player.TSPlayer.SendMessage(HConfig.NotifyOnEntryString.Replace("$HOUSE_NAME", house.Name), Color.LightSeaGreen);
                                                         HTools.BroadcastToHouseOwners(house.Name, HConfig.NotifyOnOtherEntryString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", house.Name));
                                                     }
                                                 }
@@ -221,10 +245,10 @@ namespace HousingDistricts
                                     if (!NewCurHouses.Contains(cHouse))
                                     {
                                         if (HTools.OwnsHouse(player.TSPlayer.UserID.ToString(), cHouse))
-                                            player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseExitString.Replace("$HOUSE_NAME", cHouse), Color.MediumPurple);
+                                            player.TSPlayer.SendMessage(HConfig.NotifyOnOwnHouseExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
                                         else
                                         {
-                                            player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", cHouse), Color.MediumPurple);
+                                            player.TSPlayer.SendMessage(HConfig.NotifyOnExitString.Replace("$HOUSE_NAME", cHouse), Color.LightSeaGreen);
                                             HTools.BroadcastToHouseOwners(cHouse, HConfig.NotifyOnOtherExitString.Replace("$PLAYER_NAME", player.TSPlayer.Name).Replace("$HOUSE_NAME", cHouse));
                                         }
                                         //NewCurHouses.Remove(cHouse);
@@ -241,18 +265,21 @@ namespace HousingDistricts
         }
         public void OnChat(messageBuffer msg, int ply, string text, HandledEventArgs e)
         {
-            if (HConfig.HouseChatEnabled)
+            if (!e.Handled)
             {
-                if (text[0] == '/')
-                    return;
-
-                var tsplr = TShock.Players[msg.whoAmI];
-                foreach (House house in HousingDistricts.Houses)
+                if (HConfig.HouseChatEnabled)
                 {
-                    if (house.WorldID == Main.worldID.ToString() && house.ChatEnabled == 1 && house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)))
+                    if (text[0] == '/')
+                        return;
+
+                    var tsplr = TShock.Players[msg.whoAmI];
+                    foreach (House house in HousingDistricts.Houses)
                     {
-                        HTools.BroadcastToHouse(house, text, tsplr.Name);
-                        e.Handled = true;
+                        if (house.WorldID == Main.worldID.ToString() && house.ChatEnabled == 1 && house.HouseArea.Intersects(new Rectangle(tsplr.TileX, tsplr.TileY, 1, 1)))
+                        {
+                            HTools.BroadcastToHouse(house, text, tsplr.Name);
+                            e.Handled = true;
+                        }
                     }
                 }
             }
